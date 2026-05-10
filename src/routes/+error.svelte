@@ -1,23 +1,23 @@
 <script lang="ts">
-  import { page } from '$app/stores';
-  import { AlertTriangle, Copy, RefreshCw } from '@lucide/svelte';
+  import { page } from "$app/stores";
+  import { AlertTriangle, Copy, RefreshCw } from "@lucide/svelte";
 
   const status = $derived($page.status);
   const error = $derived($page.error as App.Error | Error | null);
-  
+
   let copied = $state(false);
 
   function copyError() {
     if (!error) return;
-    const errorText = `Status: ${status}\nMessage: ${error?.message}\n\nStack:\n${(error as any)?.stack || 'No stack trace available'}`;
+    const errorText = `Status: ${status}\nMessage: ${error?.message}\n\nStack:\n${(error as any)?.stack || "No stack trace available"}`;
     navigator.clipboard.writeText(errorText);
     copied = true;
-    setTimeout(() => copied = false, 2000);
+    setTimeout(() => (copied = false), 2000);
   }
 </script>
 
 <svelte:head>
-  <title>Error {status} — Yupcha Map</title>
+  <title>Error {status} — Yupcha Maps</title>
 </svelte:head>
 
 <div class="error-page">
@@ -44,10 +44,12 @@
             {/if}
           </button>
         </div>
-        <pre><code><span class="err-msg">{error.message}</span>
+        <pre><code
+            ><span class="err-msg">{error.message}</span>
 {#if (error as any).stack}
-<span class="err-stack">{(error as any).stack}</span>
-{/if}</code></pre>
+              <span class="err-stack">{(error as any).stack}</span>
+            {/if}</code
+          ></pre>
       </div>
     {/if}
 
@@ -78,7 +80,9 @@
     padding: 32px;
     border-radius: 16px;
     border: 1px solid rgba(239, 68, 68, 0.2);
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(239, 68, 68, 0.1) inset;
+    box-shadow:
+      0 24px 80px rgba(0, 0, 0, 0.6),
+      0 0 0 1px rgba(239, 68, 68, 0.1) inset;
   }
 
   .error-header {
@@ -152,7 +156,7 @@
     margin: 0;
     padding: 16px;
     overflow-x: auto;
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-family: "JetBrains Mono", "Fira Code", monospace;
     font-size: 13px;
     line-height: 1.5;
   }
