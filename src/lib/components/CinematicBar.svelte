@@ -928,4 +928,32 @@
   :global(.light-theme) .btn-ghost:hover {
     background: rgba(0, 0, 0, 0.05);
   }
+
+  @media (max-width: 640px) {
+    .cinematic-bar {
+      max-width: calc(100% - 16px);
+      top: 8px;
+      padding: 6px 8px;
+      border-radius: 14px;
+    }
+    .search-input-wrapper input {
+      font-size: 13px;
+    }
+    .flight-pill {
+      font-size: 9px;
+      padding: 3px 6px;
+    }
+    .mini-pill {
+      font-size: 9px;
+      padding: 3px 4px;
+    }
+    .bar-actions {
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .record-btn {
+      flex: 1;
+      justify-content: center;
+    }
+  }
 </style>

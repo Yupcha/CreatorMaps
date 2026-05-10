@@ -1015,4 +1015,29 @@
     background: rgba(255, 255, 255, 0.85);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
+
+  /* Mobile: bottom sheet drawer */
+  @media (max-width: 640px) {
+    .control-panel {
+      top: auto;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      max-height: 55vh;
+      border-radius: 16px 16px 0 0;
+      animation: slideInUp 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .panel-toggle-btn {
+      top: auto;
+      bottom: 8px;
+      left: 8px;
+      width: 32px;
+      height: 32px;
+    }
+  }
+  @keyframes slideInUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
 </style>

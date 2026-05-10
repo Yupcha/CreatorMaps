@@ -528,3 +528,16 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .maplibregl-ctrl-bottom-right {
   bottom: 32px !important;
 }
+
+/* ============================================
+   Mobile Responsive
+   ============================================ */
+@media (max-width: 640px) {
+  .maplibregl-ctrl-bottom-right {
+    bottom: 40px !important;
+    right: 6px !important;
+  }
+  .maplibregl-ctrl-bottom-right .maplibregl-ctrl {
+    margin-bottom: 4px !important;
+  }
+}

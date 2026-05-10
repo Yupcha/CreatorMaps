@@ -267,4 +267,30 @@
     background: rgba(255, 255, 255, 0.5);
     border-color: rgba(0, 0, 0, 0.06);
   }
+
+  @media (max-width: 640px) {
+    .info-wrapper {
+      right: auto;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 4px;
+      align-items: center;
+    }
+    .info-bar {
+      font-size: 8px;
+      padding: 2px 6px;
+      gap: 4px;
+    }
+    .style-pills {
+      gap: 2px;
+    }
+    .style-pill {
+      padding: 3px 5px;
+      font-size: 8px;
+    }
+    .layer-toggle {
+      padding: 3px 5px;
+      font-size: 8px;
+    }
+  }
 </style>

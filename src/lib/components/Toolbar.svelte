@@ -182,4 +182,20 @@
   :global(.light-theme) .toolbar-divider {
     background: rgba(0, 0, 0, 0.08);
   }
+
+  @media (max-width: 640px) {
+    .toolbar {
+      top: 8px;
+      right: 8px;
+      flex-direction: row;
+      border-radius: 12px;
+      padding: 3px;
+      gap: 1px;
+    }
+    .toolbar-divider {
+      width: 1px;
+      height: 16px;
+      margin: 0 1px;
+    }
+  }
 </style>
