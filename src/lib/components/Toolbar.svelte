@@ -1,6 +1,8 @@
 <script lang="ts">
   import { mapInstance } from '$lib/stores/mapStore';
+  import { stateOverlayVisible } from '$lib/stores/indiaGeoStore';
   import { get } from 'svelte/store';
+  import { Compass, Globe, Maximize, Camera, Keyboard } from '@lucide/svelte';
 
   let showShortcuts = $state(false);
 
@@ -42,6 +44,7 @@
     switch (e.key.toLowerCase()) {
       case 'n': resetNorth(); break;
       case 'i': zoomToIndia(); break;
+      case 'b': stateOverlayVisible.update(v => !v); break;
       case 'f': toggleFullscreen(); break;
       case 's': quickScreenshot(); break;
       case '?': showShortcuts = !showShortcuts; break;
@@ -52,13 +55,13 @@
 <svelte:window onkeydown={handleGlobalKeydown} />
 
 <div class="toolbar glass-panel" id="toolbar">
-  <button class="btn btn-icon" onclick={resetNorth} title="Reset North (N)">🧭</button>
-  <button class="btn btn-icon" onclick={zoomToIndia} title="Zoom to India (I)">🇮🇳</button>
-  <button class="btn btn-icon" onclick={toggleFullscreen} title="Fullscreen (F)">⛶</button>
+  <button class="btn btn-icon" onclick={resetNorth} title="Reset North (N)"><Compass size={16} /></button>
+  <button class="btn btn-icon" onclick={zoomToIndia} title="Zoom to India (I)"><Globe size={16} /></button>
+  <button class="btn btn-icon" onclick={toggleFullscreen} title="Fullscreen (F)"><Maximize size={16} /></button>
   <div class="toolbar-divider"></div>
-  <button class="btn btn-icon btn-accent" onclick={quickScreenshot} title="Quick Screenshot (S)">📸</button>
+  <button class="btn btn-icon btn-accent" onclick={quickScreenshot} title="Quick Screenshot (S)"><Camera size={16} /></button>
   <div class="toolbar-divider"></div>
-  <button class="btn btn-icon" onclick={() => (showShortcuts = !showShortcuts)} title="Shortcuts (?)">⌨️</button>
+  <button class="btn btn-icon" onclick={() => (showShortcuts = !showShortcuts)} title="Shortcuts (?)"><Keyboard size={16} /></button>
 </div>
 
 {#if showShortcuts}
@@ -68,6 +71,7 @@
     <div class="shortcut-grid">
       <kbd>N</kbd><span>Reset North</span>
       <kbd>I</kbd><span>Zoom to India</span>
+      <kbd>B</kbd><span>Toggle Boundaries</span>
       <kbd>F</kbd><span>Toggle Fullscreen</span>
       <kbd>S</kbd><span>Quick Screenshot</span>
       <kbd>Scroll</kbd><span>Zoom In/Out</span>

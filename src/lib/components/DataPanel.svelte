@@ -107,6 +107,13 @@
     'Nagaland': { lat: 26.1584, lng: 94.5624, zoom: 8 },
     'Tripura': { lat: 23.9408, lng: 91.9882, zoom: 8.5 },
     'Arunachal Pradesh': { lat: 28.218, lng: 94.7278, zoom: 7 },
+    // Union Territories
+    'Ladakh': { lat: 34.1526, lng: 77.577, zoom: 7 },
+    'Andaman & Nicobar': { lat: 11.7401, lng: 92.7265, zoom: 7 },
+    'Chandigarh': { lat: 30.7333, lng: 76.7794, zoom: 12 },
+    'Dadra & Nagar Haveli': { lat: 20.1809, lng: 73.0169, zoom: 10 },
+    'Lakshadweep': { lat: 10.5667, lng: 72.6417, zoom: 9 },
+    'Puducherry': { lat: 11.9416, lng: 79.8083, zoom: 11 },
   };
 
   const sortLabels: Record<string, string> = {

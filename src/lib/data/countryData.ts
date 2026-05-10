@@ -38,7 +38,9 @@ export interface IndiaStateData {
 }
 
 // Curated India state/UT data for instant display (no API needed)
+// Complete: 28 States + 8 Union Territories = 36 entities
 export const indiaStates: IndiaStateData[] = [
+  // ─── 28 STATES ───────────────────────────────────────────
   { name: 'Maharashtra', capital: 'Mumbai', population: 123144223, area: 307713, language: 'Marathi', literacy: 82.9, gdpBillionUsd: 440, description: 'Financial & entertainment capital of India' },
   { name: 'Uttar Pradesh', capital: 'Lucknow', population: 199812341, area: 240928, language: 'Hindi', literacy: 67.7, gdpBillionUsd: 240, description: 'Most populous state, home to the Taj Mahal' },
   { name: 'Tamil Nadu', capital: 'Chennai', population: 72147030, area: 130060, language: 'Tamil', literacy: 80.3, gdpBillionUsd: 260, description: 'Automobile & IT hub of South India' },
@@ -60,8 +62,6 @@ export const indiaStates: IndiaStateData[] = [
   { name: 'Jharkhand', capital: 'Ranchi', population: 32988134, area: 79710, language: 'Hindi', literacy: 66.4, gdpBillionUsd: 45, description: 'Mineral-rich — coal & iron ore capital' },
   { name: 'Chhattisgarh', capital: 'Raipur', population: 25545198, area: 135194, language: 'Hindi', literacy: 70.3, gdpBillionUsd: 40, description: 'Tribal culture & dense forests' },
   { name: 'Haryana', capital: 'Chandigarh', population: 25351462, area: 44212, language: 'Hindi', literacy: 75.6, gdpBillionUsd: 100, description: 'Gurgaon tech corridor & dairy farming' },
-  { name: 'Jammu & Kashmir', capital: 'Srinagar', population: 12267032, area: 42241, language: 'Urdu', literacy: 67.2, gdpBillionUsd: 20, description: 'Paradise on Earth — Dal Lake & snow peaks' },
-  { name: 'Delhi NCT', capital: 'New Delhi', population: 16787941, area: 1484, language: 'Hindi', literacy: 86.2, gdpBillionUsd: 110, description: 'National capital — history & governance' },
   { name: 'Sikkim', capital: 'Gangtok', population: 610577, area: 7096, language: 'Nepali', literacy: 81.4, gdpBillionUsd: 4, description: 'Himalayan gem — Kanchenjunga views' },
   { name: 'Meghalaya', capital: 'Shillong', population: 2966889, area: 22429, language: 'Khasi', literacy: 74.4, gdpBillionUsd: 5, description: 'Abode of clouds — living root bridges' },
   { name: 'Manipur', capital: 'Imphal', population: 2855794, area: 22327, language: 'Meitei', literacy: 79.2, gdpBillionUsd: 4, description: 'Jewel of India — Loktak Lake & polo' },
@@ -69,6 +69,16 @@ export const indiaStates: IndiaStateData[] = [
   { name: 'Nagaland', capital: 'Kohima', population: 1978502, area: 16579, language: 'English', literacy: 79.6, gdpBillionUsd: 4, description: 'Hornbill Festival & Naga heritage' },
   { name: 'Tripura', capital: 'Agartala', population: 3673917, area: 10486, language: 'Bengali', literacy: 87.2, gdpBillionUsd: 6, description: 'Rubber plantations & Ujjayanta Palace' },
   { name: 'Arunachal Pradesh', capital: 'Itanagar', population: 1383727, area: 83743, language: 'English', literacy: 65.4, gdpBillionUsd: 4, description: 'Land of the dawn-lit mountains' },
+
+  // ─── 8 UNION TERRITORIES ─────────────────────────────────
+  { name: 'Delhi NCT', capital: 'New Delhi', population: 16787941, area: 1484, language: 'Hindi', literacy: 86.2, gdpBillionUsd: 110, description: 'National capital — history & governance' },
+  { name: 'Jammu & Kashmir', capital: 'Srinagar', population: 12267032, area: 42241, language: 'Urdu', literacy: 67.2, gdpBillionUsd: 20, description: 'Paradise on Earth — Dal Lake & snow peaks' },
+  { name: 'Ladakh', capital: 'Leh', population: 274289, area: 59146, language: 'Ladakhi', literacy: 77.2, gdpBillionUsd: 1, description: 'Roof of the world — Pangong Lake & monasteries' },
+  { name: 'Andaman & Nicobar', capital: 'Port Blair', population: 380581, area: 8249, language: 'Hindi', literacy: 86.6, gdpBillionUsd: 1, description: 'Tropical archipelago — pristine beaches & coral reefs' },
+  { name: 'Chandigarh', capital: 'Chandigarh', population: 1055450, area: 114, language: 'Hindi', literacy: 86.1, gdpBillionUsd: 5, description: 'Le Corbusier\'s planned city — shared capital' },
+  { name: 'Dadra & Nagar Haveli', capital: 'Daman', population: 586956, area: 603, language: 'Gujarati', literacy: 77.7, gdpBillionUsd: 3, description: 'Industrial hub — merged UT with coastal charm' },
+  { name: 'Lakshadweep', capital: 'Kavaratti', population: 64473, area: 32, language: 'Malayalam', literacy: 91.9, gdpBillionUsd: 0.2, description: 'Coral paradise — India\'s smallest UT' },
+  { name: 'Puducherry', capital: 'Puducherry', population: 1247953, area: 479, language: 'Tamil', literacy: 85.9, gdpBillionUsd: 8, description: 'French colonial heritage — Auroville & beaches' },
 ];
 
 // Fetch India country-level data from REST Countries API

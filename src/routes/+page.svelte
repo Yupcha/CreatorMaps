@@ -5,6 +5,7 @@
   import LocationSearch from '$lib/components/LocationSearch.svelte';
   import InfoBar from '$lib/components/InfoBar.svelte';
   import DataPanel from '$lib/components/DataPanel.svelte';
+  import StateTooltip from '$lib/components/StateTooltip.svelte';
 </script>
 
 <svelte:head>
@@ -19,6 +20,7 @@
   <LocationSearch />
   <InfoBar />
   <DataPanel />
+  <StateTooltip />
 </div>
 
 <style>

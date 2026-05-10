@@ -5,9 +5,22 @@
     panelOpen, activeTab, presets,
     type MapStyleKey, type MapPreset
   } from '$lib/stores/mapStore';
+  import {
+    stateOverlayVisible, indiaFocusMode, overlayMetric,
+    overlayOpacity, statesByMetric, selectedStateName,
+    cityPinsVisible,
+  } from '$lib/stores/indiaGeoStore';
+  import { METRIC_CONFIGS, INDIA_BOUNDS, type OverlayMetric } from '$lib/data/indiaConstants';
+  import { formatIndianNumber } from '$lib/data/countryData';
   import { get } from 'svelte/store';
+  import {
+    Globe, Palette, Sparkles, Camera, Zap, X, Menu,
+    Users, Coins, BookOpen, Ruler, Eye, EyeOff, Lock,
+    BarChart3, MapPin, RotateCcw, Layers, SlidersHorizontal,
+  } from '@lucide/svelte';
 
   const tabs = [
+    { key: 'india' as const, label: 'India', icon: '🇮🇳' },
     { key: 'view' as const, label: 'View', icon: '🎨' },
     { key: 'filters' as const, label: 'Filters', icon: '✨' },
     { key: 'export' as const, label: 'Export', icon: '📸' },
@@ -97,11 +110,34 @@
   function setSkyAtmosphere(val: boolean) {
     viewSettings.update((v) => ({ ...v, skyAtmosphere: val }));
   }
+
+  function flyToIndia() {
+    const map = get(mapInstance);
+    if (map) {
+      map.flyTo({
+        center: [78.9629, 22.0],
+        zoom: 4.5,
+        pitch: 0,
+        bearing: 0,
+        duration: 2000,
+      });
+    }
+  }
+
+  const metricOptions: { key: OverlayMetric; label: string; icon: typeof Users }[] = [
+    { key: 'population', label: 'Population', icon: Users },
+    { key: 'gdpBillionUsd', label: 'GDP', icon: Coins },
+    { key: 'literacy', label: 'Literacy', icon: BookOpen },
+    { key: 'area', label: 'Area', icon: Ruler },
+  ];
+
+  const currentMetricConfig = $derived(METRIC_CONFIGS[$overlayMetric]);
+  const topStates = $derived($statesByMetric.slice(0, 5));
 </script>
 
 {#if !$panelOpen}
   <button class="panel-toggle-btn" onclick={togglePanel} title="Open Controls">
-    <span>☰</span>
+    <Menu size={18} />
   </button>
 {/if}
 
@@ -109,13 +145,13 @@
   <div class="control-panel glass-panel" id="control-panel">
     <div class="panel-header">
       <div class="panel-brand">
-        <span class="brand-icon">🇮🇳</span>
+        <span class="brand-icon"><Globe size={20} color="#a5b4fc" /></span>
         <div>
           <h1 class="brand-title">India 3D Map</h1>
           <p class="brand-sub">Content Creator Toolkit</p>
         </div>
       </div>
-      <button class="btn btn-icon" onclick={togglePanel} title="Collapse panel">✕</button>
+      <button class="btn btn-icon" onclick={togglePanel} title="Collapse panel"><X size={16} /></button>
     </div>
 
     <div class="tab-bar">
@@ -125,7 +161,14 @@
           class:active={$activeTab === tab.key}
           onclick={() => activeTab.set(tab.key)}
         >
-          <span class="tab-icon">{tab.icon}</span>
+          <span class="tab-icon">
+            {#if tab.key === 'india'}<Globe size={14} />
+            {:else if tab.key === 'view'}<Palette size={14} />
+            {:else if tab.key === 'filters'}<SlidersHorizontal size={14} />
+            {:else if tab.key === 'export'}<Camera size={14} />
+            {:else if tab.key === 'presets'}<Zap size={14} />
+            {/if}
+          </span>
           <span class="tab-label">{tab.label}</span>
         </button>
       {/each}
@@ -310,6 +353,100 @@
           </div>
         </div>
       {/if}
+
+      {#if $activeTab === 'india'}
+        <div class="tab-section">
+          <div class="section-title">State Boundaries</div>
+          <div class="control-row">
+            <span class="control-label">Show Boundaries</span>
+            <label class="toggle">
+              <input type="checkbox" checked={$stateOverlayVisible}
+                onchange={(e) => stateOverlayVisible.set(e.currentTarget.checked)} />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="control-row">
+            <span class="control-label">India Focus Lock</span>
+            <label class="toggle">
+              <input type="checkbox" checked={$indiaFocusMode}
+                onchange={(e) => indiaFocusMode.set(e.currentTarget.checked)} />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="control-row">
+            <span class="control-label">City Pins</span>
+            <label class="toggle">
+              <input type="checkbox" checked={$cityPinsVisible}
+                onchange={(e) => cityPinsVisible.set(e.currentTarget.checked)} />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+
+          <div class="section-title">Choropleth Metric</div>
+          <div class="chip-grid">
+            {#each metricOptions as opt}
+              <button class="chip" class:active={$overlayMetric === opt.key}
+                onclick={() => overlayMetric.set(opt.key)}>
+                <opt.icon size={13} /> {opt.label}
+              </button>
+            {/each}
+          </div>
+
+          <div class="section-title">Overlay Opacity</div>
+          <div class="slider-container">
+            <span class="slider-label">Opacity</span>
+            <input type="range" min="0.1" max="1" step="0.05" value={$overlayOpacity}
+              oninput={(e) => overlayOpacity.set(Number(e.currentTarget.value))} />
+            <span class="slider-value">{Math.round($overlayOpacity * 100)}%</span>
+          </div>
+          <div class="chip-grid" style="margin-top: 4px;">
+            {#each [0.25, 0.5, 0.75, 1] as preset}
+              <button class="chip chip-sm" class:active={Math.abs($overlayOpacity - preset) < 0.03}
+                onclick={() => overlayOpacity.set(preset)}>
+                {Math.round(preset * 100)}%
+              </button>
+            {/each}
+          </div>
+
+          <div class="section-title">Choropleth Legend</div>
+          <div class="legend-bar">
+            <div class="legend-gradient" style:background="linear-gradient(90deg, {currentMetricConfig.colors[0]}, {currentMetricConfig.colors[1]}, {currentMetricConfig.colors[2]})"></div>
+            <div class="legend-labels">
+              <span>{currentMetricConfig.format(currentMetricConfig.min)}</span>
+              <span>{currentMetricConfig.format(currentMetricConfig.max)}</span>
+            </div>
+          </div>
+
+          {#if $cityPinsVisible}
+            <div class="section-title">City Pin Legend</div>
+            <div class="pin-legend">
+              <div class="pin-legend-item"><span class="pin-dot" style="background:#6366f1"></span> Metro (10M+)</div>
+              <div class="pin-legend-item"><span class="pin-dot" style="background:#06b6d4"></span> Tier 1 (3-10M)</div>
+              <div class="pin-legend-item"><span class="pin-dot" style="background:#f59e0b"></span> Tier 2</div>
+              <div class="pin-legend-item"><span class="pin-dot" style="background:#10b981"></span> Tier 3 / Hill</div>
+              <div class="pin-legend-item"><span class="pin-dot" style="background:#a855f7"></span> UT Capital</div>
+              <div class="pin-legend-item"><span class="pin-dot" style="background:#ef4444"></span> Landmark</div>
+            </div>
+          {/if}
+
+          <div class="section-title">Top 5 — {currentMetricConfig.label}</div>
+          <div class="india-ranks">
+            {#each topStates as state, i}
+              <button class="india-rank-row"
+                class:selected={$selectedStateName === state.name}
+                onclick={() => selectedStateName.set(state.name)}>
+                <span class="rank-num">#{i + 1}</span>
+                <span class="rank-state-name">{state.name}</span>
+                <span class="rank-state-val">{currentMetricConfig.format(state[$overlayMetric] as number)}</span>
+              </button>
+            {/each}
+          </div>
+
+          <button class="btn" style="margin-top: 12px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;" onclick={flyToIndia}>
+            <RotateCcw size={14} /> Reset to India View
+          </button>
+        </div>
+      {/if}
     </div>
 
     <div class="panel-footer">
@@ -461,6 +598,75 @@
   .preset-name { font-size: 13px; font-weight: 600; }
   .preset-desc { font-size: 11px; color: var(--text-tertiary); }
 
+  /* India Tab Styles */
+  .legend-bar {
+    margin-top: 4px;
+  }
+  .legend-gradient {
+    height: 10px;
+    border-radius: 5px;
+    border: 1px solid var(--border-subtle);
+  }
+  .legend-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--text-tertiary);
+    font-family: var(--font-mono);
+    margin-top: 3px;
+  }
+
+  .india-ranks {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .india-rank-row {
+    display: grid;
+    grid-template-columns: 26px 1fr auto;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-control);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    font-size: 12px;
+    text-align: left;
+    width: 100%;
+  }
+  .india-rank-row:hover {
+    background: var(--bg-control-hover);
+    border-color: var(--border-medium);
+    transform: translateX(3px);
+  }
+  .india-rank-row.selected {
+    border-color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.1);
+  }
+  .rank-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-tertiary);
+  }
+  .rank-state-name {
+    font-weight: 600;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .rank-state-val {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-accent);
+  }
+
   .panel-footer {
     padding: var(--space-sm) var(--space-lg);
     border-top: 1px solid var(--border-subtle);
@@ -471,5 +677,34 @@
     font-family: var(--font-mono);
     font-size: 10px;
     color: var(--text-tertiary);
+  }
+
+  /* Pin Legend */
+  .pin-legend {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 8px;
+    padding: 6px 0;
+  }
+  .pin-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: var(--text-secondary);
+  }
+  .pin-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 4px currentColor;
+  }
+
+  /* Small chip variant for opacity presets */
+  .chip-sm {
+    padding: 3px 10px !important;
+    font-size: 10px !important;
+    min-width: 42px;
   }
 </style>

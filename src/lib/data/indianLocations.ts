@@ -38,6 +38,37 @@ export const indianLocations: IndianLocation[] = [
   { name: 'Pangong Lake', state: 'Ladakh', lng: 78.6406, lat: 33.759, zoom: 11, pitch: 60, bearing: 45, description: 'High-altitude lake' },
   { name: 'Himalayas', state: 'Border Region', lng: 86.925, lat: 27.988, zoom: 12, pitch: 75, bearing: -30, description: 'Roof of the world' },
   { name: 'Thar Desert', state: 'Rajasthan', lng: 71.0, lat: 27.0, zoom: 9, pitch: 35, description: 'Great Indian Desert' },
+
+  // ─── Union Territory Locations ─────────────────────────
+  { name: 'Kargil', state: 'Ladakh', lng: 76.1349, lat: 34.5539, zoom: 12, pitch: 55, description: 'Historic hill town & winter capital' },
+  { name: 'Nubra Valley', state: 'Ladakh', lng: 77.5841, lat: 34.6946, zoom: 11, pitch: 50, description: 'Valley of flowers & Bactrian camels' },
+  { name: 'Havelock Island', state: 'Andaman & Nicobar', lng: 92.9626, lat: 11.9804, zoom: 12, description: 'Pristine Radhanagar Beach' },
+  { name: 'Port Blair', state: 'Andaman & Nicobar', lng: 92.7265, lat: 11.6234, zoom: 13, description: 'Cellular Jail & Ross Island' },
+  { name: 'Kavaratti', state: 'Lakshadweep', lng: 72.6358, lat: 10.5593, zoom: 13, description: 'Coral atoll capital of Lakshadweep' },
+  { name: 'Agatti Island', state: 'Lakshadweep', lng: 72.1869, lat: 10.8565, zoom: 14, description: 'Turquoise lagoon paradise' },
+  { name: 'Puducherry Town', state: 'Puducherry', lng: 79.8083, lat: 11.9416, zoom: 13, description: 'French Quarter & Promenade Beach' },
+  { name: 'Auroville', state: 'Puducherry', lng: 79.8069, lat: 12.0062, zoom: 14, description: 'Experimental township — Matrimandir' },
+  { name: 'Chandigarh City', state: 'Chandigarh', lng: 76.7794, lat: 30.7333, zoom: 13, description: 'Le Corbusier\'s planned city' },
+  { name: 'Daman', state: 'Dadra & Nagar Haveli', lng: 72.8397, lat: 20.3974, zoom: 13, description: 'Portuguese fort & beaches' },
+  { name: 'Silvassa', state: 'Dadra & Nagar Haveli', lng: 73.0169, lat: 20.2766, zoom: 13, description: 'Tribal museum & gardens' },
+
+  // ─── Major Tier-2 Cities ───────────────────────────────
+  { name: 'Pune', state: 'Maharashtra', lng: 73.8567, lat: 18.5204, zoom: 12, pitch: 45, description: 'Oxford of the East — IT & education' },
+  { name: 'Ahmedabad', state: 'Gujarat', lng: 72.5714, lat: 23.0225, zoom: 12, pitch: 45, description: 'Heritage city — Sabarmati Ashram' },
+  { name: 'Surat', state: 'Gujarat', lng: 72.8311, lat: 21.1702, zoom: 12, description: 'Diamond city of the world' },
+  { name: 'Lucknow', state: 'Uttar Pradesh', lng: 80.9462, lat: 26.8467, zoom: 12, pitch: 45, description: 'City of Nawabs — Mughal heritage' },
+  { name: 'Coimbatore', state: 'Tamil Nadu', lng: 76.9558, lat: 11.0168, zoom: 12, description: 'Manchester of South India' },
+  { name: 'Indore', state: 'Madhya Pradesh', lng: 75.8577, lat: 22.7196, zoom: 12, description: 'Cleanest city — street food capital' },
+  { name: 'Nagpur', state: 'Maharashtra', lng: 79.0882, lat: 21.1458, zoom: 12, description: 'Orange city — geographic center of India' },
+  { name: 'Patna', state: 'Bihar', lng: 85.1376, lat: 25.6093, zoom: 12, description: 'Ancient capital Pataliputra' },
+  { name: 'Bhopal', state: 'Madhya Pradesh', lng: 77.4126, lat: 23.2599, zoom: 12, description: 'City of lakes' },
+  { name: 'Visakhapatnam', state: 'Andhra Pradesh', lng: 83.2185, lat: 17.6868, zoom: 12, description: 'Port city — Eastern Naval Command' },
+  { name: 'Kochi', state: 'Kerala', lng: 76.2673, lat: 9.9312, zoom: 12, description: 'Queen of the Arabian Sea' },
+  { name: 'Thiruvananthapuram', state: 'Kerala', lng: 76.9471, lat: 8.5241, zoom: 12, description: 'Padmanabhaswamy Temple & Kovalam' },
+  { name: 'Mysuru', state: 'Karnataka', lng: 76.6394, lat: 12.2958, zoom: 13, description: 'City of Palaces — Dasara festival' },
+  { name: 'Jodhpur', state: 'Rajasthan', lng: 73.0243, lat: 26.2389, zoom: 13, pitch: 45, description: 'Blue City — Mehrangarh Fort' },
+  { name: 'Madurai', state: 'Tamil Nadu', lng: 78.1198, lat: 9.9252, zoom: 13, description: 'Temple city — Meenakshi Amman' },
+  { name: 'Chandigarh', state: 'Punjab', lng: 76.7794, lat: 30.7333, zoom: 12, description: 'Shared capital — Rock Garden' },
 ];
 
 export function searchLocations(query: string): IndianLocation[] {

@@ -36,3 +36,7 @@ https://github.com/SuperMap/iClient-JavaScript
 
 https://webllm.mlc.ai/
 
+https://github.com/pheralb/svgl
+lucide icons
+https://daisyui.com/?lang=en
+https://lucide.dev/guide/version-1

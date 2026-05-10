@@ -110,7 +110,7 @@ export const filterString = derived(visualFilters, ($f) => {
 
 // Panel state
 export const panelOpen = writable(true);
-export const activeTab = writable<'view' | 'filters' | 'export' | 'presets'>('view');
+export const activeTab = writable<'view' | 'filters' | 'export' | 'presets' | 'india'>('view');
 
 // Export settings
 export const exportSettings = writable({
