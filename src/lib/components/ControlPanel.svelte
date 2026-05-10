@@ -149,12 +149,7 @@
     <div class="panel-header">
       <div class="panel-brand">
         <div class="brand-left">
-          <span class="brand-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2L8 6l2 4-4 2 2 4-2 4h12l-2-4 2-4-4-2 2-4-4-4z" />
-              <circle cx="12" cy="12" r="2" />
-            </svg>
-          </span>
+          <img src="/logo.svg" alt="Yupcha" class="brand-logo" />
           <h1 class="brand-title">Yupcha Map</h1>
         </div>
         <button class="btn btn-icon" onclick={togglePanel} title="Collapse panel"><X size={16} /></button>
@@ -469,20 +464,10 @@
     align-items: center;
     gap: 8px;
   }
-  .brand-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-    border-radius: 5px;
-    box-shadow: var(--shadow-sm);
-    color: white;
-  }
-  .brand-icon svg {
-    width: 12px;
-    height: 12px;
+  .brand-logo {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
   }
   .brand-title {
     font-size: 13px;
@@ -742,9 +727,6 @@
     background: rgba(255, 255, 255, 0.8);
     color: var(--text-primary);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  }
-  :global(.light-theme) .brand-icon {
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   }
   :global(.light-theme) .segmented-control {
     background: rgba(0, 0, 0, 0.06);
