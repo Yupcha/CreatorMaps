@@ -51,9 +51,11 @@ export const overlayOpacity = writable(0.65);
 export const cityPinsVisible = writable(true);
 export type BoundaryDetail = 'states' | 'districts' | 'all';
 export const boundaryDetail = writable<BoundaryDetail>('states');
+export const activeThematicFilter = writable<string | null>(null);
 
 // ─── Hover / Selection ──────────────────────────────────────
 export const hoveredStateName = writable<string | null>(null);
+export const hoveredDistrictName = writable<string | null>(null);
 export const hoveredMousePos = writable<{ x: number; y: number } | null>(null);
 export const selectedStateName = writable<string | null>(null);
 

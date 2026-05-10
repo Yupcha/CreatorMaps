@@ -13,7 +13,8 @@
     loadIndiaGeoJSON, stateOverlayVisible, indiaFocusMode,
     overlayMetric, overlayOpacity, hoveredStateName,
     hoveredMousePos, selectedStateName, getStateData,
-    cityPinsVisible, boundaryDetail,
+    cityPinsVisible, boundaryDetail, hoveredDistrictName,
+    activeThematicFilter,
   } from '$lib/stores/indiaGeoStore';
   import { indiaStates } from '$lib/data/countryData';
   import { indianCities, type IndianCity } from '$lib/data/indianCities';
@@ -157,8 +158,15 @@
 
       const metric = get(overlayMetric);
 
+      // Helper to safely add a layer only if it doesn't already exist
+      const safeAddLayer = (layerDef: any) => {
+        if (!map!.getLayer(layerDef.id)) {
+          map!.addLayer(layerDef);
+        }
+      };
+
       // State fill layer — choropleth colored
-      map.addLayer({
+      safeAddLayer({
         id: 'india-states-fill',
         type: 'fill',
         source: 'india-states',
@@ -173,39 +181,62 @@
         },
       });
 
-      // State border lines — bold white, always visible
-      map.addLayer({
+      // State boundary glow layer (cinematic soft edge)
+      safeAddLayer({
+        id: 'india-states-glow',
+        type: 'line',
+        source: 'india-states',
+        paint: {
+          'line-color': '#4f46e5',
+          'line-width': [
+            'interpolate', ['linear'], ['zoom'],
+            3, 3,
+            6, 6,
+            10, 10,
+          ],
+          'line-opacity': 0.15,
+          'line-blur': [
+            'interpolate', ['linear'], ['zoom'],
+            3, 2,
+            6, 5,
+            10, 8,
+          ]
+        },
+      });
+
+      // Main State border lines — thin, crisp, glowing
+      safeAddLayer({
         id: 'india-states-outline',
         type: 'line',
         source: 'india-states',
         paint: {
-          'line-color': 'rgba(255, 255, 255, 0.8)',
+          'line-color': 'rgba(165, 180, 252, 0.65)',
           'line-width': [
             'interpolate', ['linear'], ['zoom'],
-            3, 1,
-            5, 2,
-            8, 3,
-            12, 4,
+            3, 0.5,
+            6, 1,
+            10, 1.5,
+            14, 2,
           ],
         },
       });
 
-      // District border lines — thin, visible at higher zoom
-      map.addLayer({
+      // District border lines — extremely subtle
+      safeAddLayer({
         id: 'india-districts-outline',
         type: 'line',
         source: 'india-states',
         paint: {
-          'line-color': 'rgba(255, 255, 255, 0.25)',
+          'line-color': 'rgba(129, 140, 248, 0.15)',
           'line-width': [
             'interpolate', ['linear'], ['zoom'],
             5, 0,
-            6, 0.3,
-            8, 0.6,
-            10, 1,
-            14, 1.5,
+            6, 0.2,
+            8, 0.4,
+            10, 0.6,
+            14, 1,
           ],
-          'line-dasharray': [2, 2],
+          'line-dasharray': [3, 3],
         },
         layout: {
           'visibility': get(boundaryDetail) !== 'states' ? 'visible' : 'none',
@@ -213,17 +244,17 @@
       });
 
       // Highlighted border for hovered state
-      map.addLayer({
+      safeAddLayer({
         id: 'india-states-highlight',
         type: 'line',
         source: 'india-states',
         paint: {
-          'line-color': '#a5b4fc',
+          'line-color': '#818cf8',
           'line-width': [
             'interpolate', ['linear'], ['zoom'],
-            3, 1.5,
-            5, 3,
-            8, 5,
+            3, 1,
+            5, 2,
+            8, 3,
           ],
           'line-opacity': [
             'case',
@@ -235,17 +266,17 @@
       });
 
       // Selected state glow border
-      map.addLayer({
+      safeAddLayer({
         id: 'india-states-selected',
         type: 'line',
         source: 'india-states',
         paint: {
-          'line-color': '#6366f1',
+          'line-color': '#22d3ee',
           'line-width': [
             'interpolate', ['linear'], ['zoom'],
             3, 2,
-            5, 4,
-            8, 6,
+            5, 3,
+            8, 4,
           ],
           'line-opacity': [
             'case',
@@ -257,7 +288,7 @@
       });
 
       // State name labels at center of each feature
-      map.addLayer({
+      safeAddLayer({
         id: 'india-states-labels',
         type: 'symbol',
         source: 'india-states',
@@ -269,7 +300,7 @@
             6, 10,
             8, 13,
           ],
-          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-font': ['Noto Sans Bold'],
           'text-anchor': 'center',
           'text-allow-overlap': false,
           'text-ignore-placement': false,
@@ -294,6 +325,7 @@
         const props = feature.properties || {};
         const stateName = props._normalizedState ||
           normalizeStateName(props.st_nm || props.stname || props.ST_NM || props.state || '');
+        const districtName = props.district || props.dtname || props.dt_name || null;
 
         // Update hover feature state
         if (hoveredFeatureId !== null && hoveredFeatureId !== undefined) {
@@ -311,6 +343,7 @@
         }
 
         hoveredStateName.set(stateName);
+        hoveredDistrictName.set(districtName);
         hoveredMousePos.set({ x: e.originalEvent.clientX, y: e.originalEvent.clientY });
       });
 
@@ -325,6 +358,7 @@
         }
         hoveredFeatureId = null;
         hoveredStateName.set(null);
+        hoveredDistrictName.set(null);
         hoveredMousePos.set(null);
       });
 
@@ -428,10 +462,17 @@
 
   function buildDeckLayers(showPins: boolean) {
     if (!showPins) return [];
+
+    let filteredCities = indianCities;
+    const filter = get(activeThematicFilter);
+    if (filter) {
+      filteredCities = indianCities.filter(c => c.tags.includes(filter) || c.industries.map(i => i.toLowerCase()).includes(filter) || (filter === 'film' && c.filmIndustry));
+    }
+
     return [
       new ScatterplotLayer({
         id: 'city-pins',
-        data: indianCities,
+        data: filteredCities,
         getPosition: (d: IndianCity) => [d.lng, d.lat],
         getRadius: (d: IndianCity) => getCityRadius(d.population),
         getFillColor: (d: IndianCity) => getCityColor(d.category),
@@ -447,7 +488,7 @@
       }),
       new TextLayer({
         id: 'city-labels',
-        data: indianCities.filter(c => c.category === 'metro' || c.category === 'tier1' || c.population > 1000000),
+        data: filteredCities.filter(c => c.category === 'metro' || c.category === 'tier1' || c.population > 1000000 || filter),
         getPosition: (d: IndianCity) => [d.lng, d.lat],
         getText: (d: IndianCity) => d.name,
         getSize: 12,
@@ -509,11 +550,11 @@
       preserveDrawingBuffer: true,
       maxPitch: 85,
       fadeDuration: 0,
+      attributionControl: false,
     } as any);
 
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
-    map.addControl(new maplibregl.ScaleControl({ maxWidth: 120 }), 'bottom-left');
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-left');
+    map.addControl(new maplibregl.ScaleControl({ maxWidth: 120 }), 'bottom-right');
 
     map.on('load', () => {
       // Start without terrain to avoid shader errors on initial load
@@ -529,6 +570,29 @@
       if (get(stateOverlayVisible)) {
         addIndiaLayers();
       }
+
+      // Inject MapLibre scale control safely alongside InfoBar
+      setTimeout(() => {
+        const mlContainer = document.getElementById('maplibre-controls-container');
+        const scale = document.querySelector('.maplibregl-ctrl-scale');
+        if (mlContainer && scale) {
+          mlContainer.appendChild(scale);
+        }
+      }, 500);
+
+      // Custom trackpad panning: intercept wheel events in capture phase to prevent MapLibre from zooming
+      // (Pinch-to-zoom natively sets ctrlKey=true on trackpad wheel events)
+      mapContainer.addEventListener('wheel', (e: WheelEvent) => {
+        // Trackpad vs Mouse wheel heuristic:
+        // Trackpads typically use DOM_DELTA_PIXEL (0) and often have deltaX, or fractional/small deltaY
+        const isTrackpad = e.deltaMode === 0 && (Math.abs(e.deltaX) > 0 || Math.abs(e.deltaY) < 50 || e.deltaY % 1 !== 0);
+        
+        if (!e.ctrlKey && isTrackpad) {
+          e.preventDefault();
+          e.stopPropagation(); // Stop MapLibre from seeing this and zooming
+          map!.panBy([e.deltaX, e.deltaY], { animate: false });
+        }
+      }, { passive: false, capture: true });
     });
 
     map.on('moveend', syncCamera);
@@ -562,15 +626,31 @@
   $effect(() => {
     const visible = $stateOverlayVisible;
     if (!map) return;
-    const layers = ['india-states-fill', 'india-states-outline', 'india-states-highlight', 'india-states-selected', 'india-states-labels'];
+    const layers = ['india-states-fill', 'india-states-outline', 'india-states-glow', 'india-districts-outline', 'india-states-highlight', 'india-states-selected', 'india-states-labels'];
     for (const id of layers) {
       if (map.getLayer(id)) {
-        map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none');
+        // District layer has its own visibility logic, so we respect it if main overlay is visible
+        if (id === 'india-districts-outline' && visible) {
+           map.setLayoutProperty(id, 'visibility', get(boundaryDetail) !== 'states' ? 'visible' : 'none');
+        } else {
+           map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none');
+        }
       }
     }
     // If turning on and layers not yet added, add them
     if (visible && !indiaLayersAdded) {
       addIndiaLayers();
+    }
+  });
+
+  // React to boundary detail toggle
+  $effect(() => {
+    const detail = $boundaryDetail;
+    const visible = $stateOverlayVisible;
+    if (!map || !indiaLayersAdded || !visible) return;
+    
+    if (map.getLayer('india-districts-outline')) {
+      map.setLayoutProperty('india-districts-outline', 'visibility', detail !== 'states' ? 'visible' : 'none');
     }
   });
 
@@ -625,9 +705,10 @@
     } catch (_) { /* style may not be loaded yet */ }
   });
 
-  // React to city pins toggle
+  // React to city pins toggle or filter changes
   $effect(() => {
     const showPins = $cityPinsVisible;
+    const filter = $activeThematicFilter;
     if (!deckOverlay) return;
     try {
       deckOverlay.setProps({ layers: buildDeckLayers(showPins) });

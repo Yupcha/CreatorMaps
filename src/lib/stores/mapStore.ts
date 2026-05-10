@@ -110,7 +110,7 @@ export const filterString = derived(visualFilters, ($f) => {
 
 // Panel state
 export const panelOpen = writable(true);
-export const activeTab = writable<'view' | 'filters' | 'export' | 'presets' | 'india'>('view');
+export const activeTab = writable<'filters' | 'export' | 'presets' | 'india'>('india');
 
 // Export settings
 export const exportSettings = writable({
@@ -197,3 +197,9 @@ export const presets: MapPreset[] = [
     filters: { brightness: 1.1, contrast: 1.5, saturation: 0, hueRotate: 0, sepia: 0, grayscale: 100 },
   },
 ];
+
+// Recording state
+export const recordingMode = writable(false);
+
+// 3D data visualization overlay
+export const show3DOverlay = writable(false);

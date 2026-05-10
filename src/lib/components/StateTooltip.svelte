@@ -1,15 +1,37 @@
 <script lang="ts">
   import {
-    hoveredStateName, hoveredMousePos, selectedStateName,
+    hoveredStateName, hoveredDistrictName, hoveredMousePos, selectedStateName,
     overlayMetric, getStateData,
   } from '$lib/stores/indiaGeoStore';
   import { METRIC_CONFIGS } from '$lib/data/indiaConstants';
-  import { Users, Ruler, BookOpen, MapPin, BarChart3 } from '@lucide/svelte';
+  import { Users, Ruler, BookOpen, MapPin, BarChart3, Navigation, CloudSun } from '@lucide/svelte';
+  import { fetchWeather, type WeatherData } from '$lib/utils/weather';
+  import NumberFlow from '@number-flow/svelte';
 
   const stateData = $derived.by(() => {
     const name = $hoveredStateName;
     if (!name) return null;
     return getStateData(name) ?? null;
+  });
+
+  const districtName = $derived($hoveredDistrictName);
+
+  let weatherData = $state<WeatherData | null>(null);
+  let weatherLocation = $state<string | null>(null);
+
+  // Debounced weather fetch
+  $effect(() => {
+    const loc = districtName || (stateData ? stateData.name : null);
+    if (loc !== weatherLocation) {
+      weatherLocation = loc;
+      weatherData = null; // Clear old data immediately
+      if (loc) {
+        const timer = setTimeout(async () => {
+          weatherData = await fetchWeather(loc);
+        }, 400); // 400ms debounce
+        return () => clearTimeout(timer);
+      }
+    }
   });
 
   const metricConfig = $derived(METRIC_CONFIGS[$overlayMetric]);
@@ -54,18 +76,28 @@
   <div class="state-tooltip" style={tooltipStyle}>
     <div class="tt-header">
       <div class="tt-name-group">
-        <span class="tt-name">{stateData.name}</span>
+        <span class="tt-name">{districtName ? districtName : stateData.name}</span>
         {#if isSelected}
           <span class="tt-selected-badge">SELECTED</span>
         {/if}
       </div>
-      <span class="tt-capital">{stateData.capital}</span>
+      <span class="tt-capital">{districtName ? `${stateData.name} State` : stateData.capital}</span>
     </div>
     <div class="tt-divider"></div>
     <div class="tt-metric-row">
       <span class="tt-metric-icon"><BarChart3 size={13} /></span>
       <span class="tt-metric-label">{metricConfig.label}</span>
-      <span class="tt-metric-value">{metricFormatted}</span>
+      <span class="tt-metric-value">
+        {#if $overlayMetric === 'population'}
+          <NumberFlow value={metricValue} locales="en-IN" />
+        {:else if $overlayMetric === 'gdpBillionUsd'}
+          $<NumberFlow value={metricValue} />B
+        {:else if $overlayMetric === 'literacy'}
+          <NumberFlow value={metricValue} format={{ maximumFractionDigits: 1 }} />%
+        {:else}
+          <NumberFlow value={metricValue} locales="en-IN" />
+        {/if}
+      </span>
     </div>
     <div class="tt-bar-track">
       <div
@@ -79,6 +111,15 @@
       <span class="tt-stat"><Ruler size={10} /> {stateData.area.toLocaleString('en-IN')} km²</span>
       <span class="tt-stat"><BookOpen size={10} /> {stateData.literacy}%</span>
     </div>
+
+    {#if weatherData}
+      <div class="tt-weather">
+        <CloudSun size={12} color="#f59e0b" />
+        <span class="weather-temp">{weatherData.temp}°C</span>
+        <span class="weather-cond">{weatherData.condition}</span>
+      </div>
+    {/if}
+
     <div class="tt-hint">Click to focus</div>
   </div>
 {/if}
@@ -87,18 +128,15 @@
   .state-tooltip {
     position: fixed;
     z-index: 500;
-    min-width: 240px;
-    max-width: 280px;
-    padding: 14px 16px;
-    background: rgba(8, 8, 18, 0.92);
+    min-width: 200px;
+    max-width: 240px;
+    padding: 10px 12px;
+    background: var(--glass-bg);
     backdrop-filter: blur(24px) saturate(1.8);
     -webkit-backdrop-filter: blur(24px) saturate(1.8);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 14px;
-    box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.6),
-      0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-      0 1px 0 rgba(255, 255, 255, 0.08) inset;
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.1);
     pointer-events: none;
     animation: tooltipIn 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
     will-change: transform, opacity;
@@ -118,89 +156,89 @@
   .tt-header {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0px;
   }
 
   .tt-name-group {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
   }
 
   .tt-name {
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 700;
-    color: #f1f1f4;
+    color: var(--text-primary);
     letter-spacing: -0.01em;
   }
 
   .tt-selected-badge {
-    font-size: 8px;
+    font-size: 7px;
     font-weight: 700;
     letter-spacing: 0.1em;
     color: #6366f1;
     background: rgba(99, 102, 241, 0.15);
     border: 1px solid rgba(99, 102, 241, 0.3);
-    padding: 1px 6px;
-    border-radius: 4px;
+    padding: 1px 4px;
+    border-radius: 3px;
   }
 
   .tt-capital {
-    font-size: 11px;
-    color: #a5b4fc;
+    font-size: 9px;
+    color: var(--text-accent);
     font-weight: 500;
   }
 
   .tt-divider {
     height: 1px;
-    margin: 8px 0;
-    background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02));
+    margin: 6px 0;
+    background: var(--border-subtle);
   }
 
   .tt-metric-row {
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
 
   .tt-metric-icon {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .tt-metric-label {
-    font-size: 11px;
-    color: #9ca3af;
+    font-size: 10px;
+    color: var(--text-secondary);
     font-weight: 500;
     flex: 1;
   }
 
   .tt-metric-value {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
-    color: #f1f1f4;
+    color: var(--text-primary);
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
   }
 
   .tt-bar-track {
-    height: 5px;
-    background: rgba(255, 255, 255, 0.06);
-    border-radius: 3px;
+    height: 3px;
+    background: var(--bg-control);
+    border-radius: 2px;
     overflow: hidden;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
 
   .tt-bar-fill {
     height: 100%;
-    border-radius: 3px;
+    border-radius: 2px;
     transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .tt-stats {
     display: flex;
-    gap: 10px;
-    font-size: 10px;
-    color: #6b7280;
+    gap: 8px;
+    font-size: 9px;
+    color: var(--text-tertiary);
     font-family: 'JetBrains Mono', monospace;
   }
 
@@ -209,10 +247,33 @@
   }
 
   .tt-hint {
-    margin-top: 6px;
-    font-size: 9px;
-    color: #4b5563;
+    margin-top: 4px;
+    font-size: 8px;
+    color: var(--text-tertiary);
     text-align: center;
     letter-spacing: 0.05em;
+  }
+
+  .tt-weather {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--border-medium);
+  }
+
+  .weather-temp {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .weather-cond {
+    font-size: 9px;
+    color: var(--text-secondary);
+    text-transform: capitalize;
   }
 </style>

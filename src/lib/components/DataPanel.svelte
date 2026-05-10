@@ -2,6 +2,7 @@
   import { indiaStates, fetchIndiaData, formatIndianNumber, formatArea, type CountryData, type IndiaStateData } from '$lib/data/countryData';
   import { mapInstance } from '$lib/stores/mapStore';
   import { get } from 'svelte/store';
+  import ChartsPanel from './ChartsPanel.svelte';
 
   let open = $state(false);
   let activeView = $state<'country' | 'states' | 'rankings'>('country');
@@ -13,7 +14,6 @@
   let sortAsc = $state(false);
   let selectedState = $state<IndiaStateData | null>(null);
 
-  // Fetch India data on first open
   async function loadCountryData() {
     if (countryData) return;
     loading = true;
@@ -75,7 +75,6 @@
     sortKey = keys[(idx + 1) % keys.length];
   }
 
-  // State coordinates for flyTo
   const stateCoords: Record<string, { lat: number; lng: number; zoom: number }> = {
     'Maharashtra': { lat: 19.7515, lng: 75.7139, zoom: 6 },
     'Uttar Pradesh': { lat: 26.8467, lng: 80.9462, zoom: 6 },
@@ -107,7 +106,6 @@
     'Nagaland': { lat: 26.1584, lng: 94.5624, zoom: 8 },
     'Tripura': { lat: 23.9408, lng: 91.9882, zoom: 8.5 },
     'Arunachal Pradesh': { lat: 28.218, lng: 94.7278, zoom: 7 },
-    // Union Territories
     'Ladakh': { lat: 34.1526, lng: 77.577, zoom: 7 },
     'Andaman & Nicobar': { lat: 11.7401, lng: 92.7265, zoom: 7 },
     'Chandigarh': { lat: 30.7333, lng: 76.7794, zoom: 12 },
@@ -186,7 +184,7 @@
           <div class="section-divider"></div>
           <div class="info-row"><span class="info-key">Official Name</span><span class="info-val">{countryData.officialName}</span></div>
           <div class="info-row"><span class="info-key">Languages</span><span class="info-val">{Object.values(countryData.languages).join(', ')}</span></div>
-          <div class="info-row"><span class="info-key">Currencies</span><span class="info-val">{Object.values(countryData.currencies).map(c => `${c.name} (${c.symbol})`).join(', ')}</span></div>
+          <div class="info-row"><span class="info-key">Currencies</span><span class="info-val">{Object.values(countryData.currencies).map((c: any) => `${c.name} (${c.symbol})`).join(', ')}</span></div>
           <div class="info-row"><span class="info-key">Drives on</span><span class="info-val">{countryData.car?.side ?? 'left'} side</span></div>
           <div class="info-row"><span class="info-key">FIFA Code</span><span class="info-val">{countryData.fifa}</span></div>
           <div class="info-row"><span class="info-key">Top Domain</span><span class="info-val">{countryData.tld?.join(', ')}</span></div>
@@ -197,15 +195,10 @@
 
       {#if activeView === 'states'}
         <div class="states-toolbar">
-          <input
-            class="states-search"
-            type="text"
-            placeholder="Filter states..."
-            bind:value={searchQuery}
-          />
+          <input class="states-search" type="text" placeholder="Filter states..." bind:value={searchQuery} />
           <button class="sort-btn" onclick={cycleSortKey} title="Change sort">
             {sortLabels[sortKey] ?? sortKey}
-            <span onclick={(e) => { e.stopPropagation(); sortAsc = !sortAsc; }} class="sort-dir">
+            <span onclick={(e) => { e.stopPropagation(); sortAsc = !sortAsc; }} class="sort-dir" role="button" tabindex="0">
               {sortAsc ? '↑' : '↓'}
             </span>
           </button>
@@ -235,59 +228,7 @@
 
       {#if activeView === 'rankings'}
         <div class="rankings-section">
-          <h3 class="rank-title">Top States by GDP (USD Billion)</h3>
-          <div class="rank-bars">
-            {#each [...indiaStates].sort((a, b) => b.gdpBillionUsd - a.gdpBillionUsd).slice(0, 10) as state, i}
-              <div class="rank-row">
-                <span class="rank-pos">#{i + 1}</span>
-                <span class="rank-name">{state.name}</span>
-                <div class="rank-bar-track">
-                  <div
-                    class="rank-bar-fill"
-                    style:width="{(state.gdpBillionUsd / 440) * 100}%"
-                    style:animation-delay="{i * 60}ms"
-                  ></div>
-                </div>
-                <span class="rank-val">${state.gdpBillionUsd}B</span>
-              </div>
-            {/each}
-          </div>
-
-          <h3 class="rank-title" style="margin-top: 24px;">Top States by Literacy</h3>
-          <div class="rank-bars">
-            {#each [...indiaStates].sort((a, b) => b.literacy - a.literacy).slice(0, 10) as state, i}
-              <div class="rank-row">
-                <span class="rank-pos">#{i + 1}</span>
-                <span class="rank-name">{state.name}</span>
-                <div class="rank-bar-track">
-                  <div
-                    class="rank-bar-fill lit"
-                    style:width="{state.literacy}%"
-                    style:animation-delay="{i * 60}ms"
-                  ></div>
-                </div>
-                <span class="rank-val">{state.literacy}%</span>
-              </div>
-            {/each}
-          </div>
-
-          <h3 class="rank-title" style="margin-top: 24px;">Top States by Population</h3>
-          <div class="rank-bars">
-            {#each [...indiaStates].sort((a, b) => b.population - a.population).slice(0, 10) as state, i}
-              <div class="rank-row">
-                <span class="rank-pos">#{i + 1}</span>
-                <span class="rank-name">{state.name}</span>
-                <div class="rank-bar-track">
-                  <div
-                    class="rank-bar-fill pop"
-                    style:width="{(state.population / 200000000) * 100}%"
-                    style:animation-delay="{i * 60}ms"
-                  ></div>
-                </div>
-                <span class="rank-val">{formatIndianNumber(state.population)}</span>
-              </div>
-            {/each}
-          </div>
+          <ChartsPanel />
         </div>
       {/if}
     </div>
@@ -297,18 +238,18 @@
 <style>
   .data-toggle-btn {
     position: fixed;
-    top: 16px;
-    right: 60px;
+    top: 12px;
+    right: 56px;
     z-index: var(--z-toolbar, 200);
-    width: 42px;
-    height: 42px;
+    width: 36px;
+    height: 36px;
     border-radius: var(--radius-md);
     border: 1px solid var(--glass-border);
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
     color: var(--text-primary);
-    font-size: 18px;
+    font-size: 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -323,10 +264,10 @@
 
   .data-panel {
     position: fixed;
-    top: 16px;
-    right: 60px;
-    bottom: 16px;
-    width: 380px;
+    top: 12px;
+    right: 56px;
+    bottom: 12px;
+    width: 300px;
     z-index: var(--z-panel, 100);
     display: flex;
     flex-direction: column;
@@ -345,11 +286,11 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--space-md) var(--space-lg);
+    padding: 8px 12px;
     border-bottom: 1px solid var(--border-subtle);
   }
   .dp-title {
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 700;
     color: var(--text-primary);
   }
@@ -394,7 +335,6 @@
     font-size: 13px;
   }
 
-  /* Metrics Grid */
   .metrics-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -409,9 +349,7 @@
     border: 1px solid var(--border-subtle);
     transition: border-color var(--transition-normal);
   }
-  .metric-card:hover {
-    border-color: var(--border-medium);
-  }
+  .metric-card:hover { border-color: var(--border-medium); }
   .metric-label {
     font-size: 10px;
     font-weight: 500;
@@ -444,7 +382,6 @@
   .info-key { color: var(--text-tertiary); font-weight: 500; }
   .info-val { color: var(--text-primary); font-weight: 600; text-align: right; max-width: 55%; }
 
-  /* States */
   .states-toolbar {
     display: flex;
     gap: var(--space-sm);
@@ -536,71 +473,16 @@
     line-height: 1.4;
   }
 
-  /* Rankings */
-  .rank-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: var(--space-md);
-  }
-  .rank-bars {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .rank-row {
-    display: grid;
-    grid-template-columns: 24px 100px 1fr 55px;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-  }
-  .rank-pos {
-    color: var(--text-tertiary);
-    font-family: var(--font-mono);
-    font-weight: 600;
-    font-size: 10px;
-  }
-  .rank-name {
-    color: var(--text-primary);
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .rank-bar-track {
-    height: 14px;
-    background: var(--bg-control);
-    border-radius: 7px;
-    overflow: hidden;
-    border: 1px solid var(--border-subtle);
-  }
-  .rank-bar-fill {
-    height: 100%;
-    border-radius: 7px;
-    background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary, #6366f1));
-    animation: barGrow 600ms cubic-bezier(0.4, 0, 0.2, 1) both;
-  }
-  .rank-bar-fill.lit {
-    background: linear-gradient(90deg, #10b981, #34d399);
-  }
-  .rank-bar-fill.pop {
-    background: linear-gradient(90deg, #f59e0b, #fb923c);
-  }
-  .rank-val {
-    text-align: right;
-    color: var(--text-secondary);
-    font-family: var(--font-mono);
-    font-weight: 600;
-    font-size: 10px;
-  }
-
-  @keyframes barGrow {
-    from { width: 0 !important; }
-  }
-
   @keyframes slideInRight {
     from { transform: translateX(20px); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
+  }
+
+  :global(.light-theme) .data-toggle-btn {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+  :global(.light-theme) .data-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.85);
   }
 </style>

@@ -2,13 +2,13 @@
   import {
     activeStyle, viewSettings, visualFilters,
     exportSettings, mapStyles, mapInstance, cameraState,
-    panelOpen, activeTab, presets,
+    panelOpen, activeTab, presets, show3DOverlay,
     type MapStyleKey, type MapPreset
   } from '$lib/stores/mapStore';
   import {
     stateOverlayVisible, indiaFocusMode, overlayMetric,
     overlayOpacity, statesByMetric, selectedStateName,
-    cityPinsVisible,
+    cityPinsVisible, boundaryDetail, activeThematicFilter,
   } from '$lib/stores/indiaGeoStore';
   import { METRIC_CONFIGS, INDIA_BOUNDS, type OverlayMetric } from '$lib/data/indiaConstants';
   import { formatIndianNumber } from '$lib/data/countryData';
@@ -16,12 +16,15 @@
   import {
     Globe, Palette, Sparkles, Camera, Zap, X, Menu,
     Users, Coins, BookOpen, Ruler, Eye, EyeOff, Lock,
-    BarChart3, MapPin, RotateCcw, Layers, SlidersHorizontal,
+    BarChart3, MapPin, RotateCcw, Layers, SlidersHorizontal, Video, Box,
   } from '@lucide/svelte';
+
+  import { trackStyleChange, trackPreset } from '$lib/utils/analytics';
+
+
 
   const tabs = [
     { key: 'india' as const, label: 'India', icon: '🇮🇳' },
-    { key: 'view' as const, label: 'View', icon: '🎨' },
     { key: 'filters' as const, label: 'Filters', icon: '✨' },
     { key: 'export' as const, label: 'Export', icon: '📸' },
     { key: 'presets' as const, label: 'Presets', icon: '⚡' },
@@ -145,16 +148,19 @@
   <div class="control-panel glass-panel" id="control-panel">
     <div class="panel-header">
       <div class="panel-brand">
-        <span class="brand-icon"><Globe size={20} color="#a5b4fc" /></span>
-        <div>
-          <h1 class="brand-title">India 3D Map</h1>
-          <p class="brand-sub">Content Creator Toolkit</p>
+        <div class="brand-left">
+          <span class="brand-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L8 6l2 4-4 2 2 4-2 4h12l-2-4 2-4-4-2 2-4-4-4z" />
+              <circle cx="12" cy="12" r="2" />
+            </svg>
+          </span>
+          <h1 class="brand-title">Yupcha Map</h1>
         </div>
+        <button class="btn btn-icon" onclick={togglePanel} title="Collapse panel"><X size={16} /></button>
       </div>
-      <button class="btn btn-icon" onclick={togglePanel} title="Collapse panel"><X size={16} /></button>
-    </div>
 
-    <div class="tab-bar">
+      <div class="tab-bar">
       {#each tabs as tab}
         <button
           class="tab-btn"
@@ -163,7 +169,6 @@
         >
           <span class="tab-icon">
             {#if tab.key === 'india'}<Globe size={14} />
-            {:else if tab.key === 'view'}<Palette size={14} />
             {:else if tab.key === 'filters'}<SlidersHorizontal size={14} />
             {:else if tab.key === 'export'}<Camera size={14} />
             {:else if tab.key === 'presets'}<Zap size={14} />
@@ -172,88 +177,10 @@
           <span class="tab-label">{tab.label}</span>
         </button>
       {/each}
+      </div>
     </div>
 
     <div class="panel-content">
-      {#if $activeTab === 'view'}
-        <div class="tab-section">
-          <div class="section-title">Map Style</div>
-          <div class="chip-grid">
-            {#each mapStyles as style}
-              <button class="chip" class:active={$activeStyle === style.key} onclick={() => setStyle(style.key)}>
-                {style.icon} {style.label}
-              </button>
-            {/each}
-          </div>
-
-          <div class="section-title">Camera</div>
-          <div class="slider-container">
-            <span class="slider-label">Pitch</span>
-            <input type="range" min="0" max="85" step="1" value={$cameraState.pitch}
-              oninput={(e) => setPitch(Number(e.currentTarget.value))} />
-            <span class="slider-value">{$cameraState.pitch}°</span>
-          </div>
-          <div class="slider-container">
-            <span class="slider-label">Bearing</span>
-            <input type="range" min="-180" max="180" step="1" value={$cameraState.bearing}
-              oninput={(e) => setBearing(Number(e.currentTarget.value))} />
-            <span class="slider-value">{$cameraState.bearing}°</span>
-          </div>
-
-          <div class="section-title">Terrain</div>
-          <div class="control-row">
-            <span class="control-label">3D Terrain</span>
-            <label class="toggle">
-              <input type="checkbox" checked={$viewSettings.terrainEnabled}
-                onchange={(e) => viewSettings.update(v => ({...v, terrainEnabled: e.currentTarget.checked}))} />
-              <span class="toggle-track"></span>
-            </label>
-          </div>
-          {#if $viewSettings.terrainEnabled}
-            <div class="slider-container">
-              <span class="slider-label">Exaggeration</span>
-              <input type="range" min="0" max="3" step="0.1" value={$viewSettings.terrainExaggeration}
-                oninput={(e) => setExaggeration(Number(e.currentTarget.value))} />
-              <span class="slider-value">{$viewSettings.terrainExaggeration.toFixed(1)}x</span>
-            </div>
-          {/if}
-          <div class="control-row">
-            <span class="control-label">3D Buildings</span>
-            <label class="toggle">
-              <input type="checkbox" checked={$viewSettings.buildings3D}
-                onchange={(e) => setBuildings(e.currentTarget.checked)} />
-              <span class="toggle-track"></span>
-            </label>
-          </div>
-
-          <div class="section-title">Atmosphere</div>
-          <div class="control-row">
-            <span class="control-label">Fog</span>
-            <label class="toggle">
-              <input type="checkbox" checked={$viewSettings.fog}
-                onchange={(e) => setFogEnabled(e.currentTarget.checked)} />
-              <span class="toggle-track"></span>
-            </label>
-          </div>
-          {#if $viewSettings.fog}
-            <div class="slider-container">
-              <span class="slider-label">Fog Density</span>
-              <input type="range" min="0" max="1" step="0.05" value={$viewSettings.fogDensity}
-                oninput={(e) => setFogDensity(Number(e.currentTarget.value))} />
-              <span class="slider-value">{$viewSettings.fogDensity.toFixed(2)}</span>
-            </div>
-          {/if}
-          <div class="control-row">
-            <span class="control-label">Sky Atmosphere</span>
-            <label class="toggle">
-              <input type="checkbox" checked={$viewSettings.skyAtmosphere}
-                onchange={(e) => setSkyAtmosphere(e.currentTarget.checked)} />
-              <span class="toggle-track"></span>
-            </label>
-          </div>
-        </div>
-      {/if}
-
       {#if $activeTab === 'filters'}
         <div class="tab-section">
           <div class="section-title">Visual Filters</div>
@@ -339,10 +266,21 @@
 
       {#if $activeTab === 'presets'}
         <div class="tab-section">
-          <div class="section-title">Quick Presets</div>
-          <div class="preset-grid">
+          <div class="section-title">Story Filters</div>
+          <p style="font-size: 10px; color: var(--text-tertiary); margin-bottom: 8px;">Highlight cities by industry & tag</p>
+          <div class="chip-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 16px;">
+            <button class="chip" class:active={$activeThematicFilter === null} onclick={() => activeThematicFilter.set(null)}>All Cities</button>
+            <button class="chip" class:active={$activeThematicFilter === 'tech'} onclick={() => activeThematicFilter.set('tech')}>💻 Tech Hubs</button>
+            <button class="chip" class:active={$activeThematicFilter === 'film'} onclick={() => activeThematicFilter.set('film')}>🎬 Film & Cinema</button>
+            <button class="chip" class:active={$activeThematicFilter === 'tourism'} onclick={() => activeThematicFilter.set('tourism')}>🏰 Tourism</button>
+            <button class="chip" class:active={$activeThematicFilter === 'textiles'} onclick={() => activeThematicFilter.set('textiles')}>🧵 Textiles</button>
+            <button class="chip" class:active={$activeThematicFilter === 'port'} onclick={() => activeThematicFilter.set('port')}>⚓ Major Ports</button>
+          </div>
+
+          <div class="section-title">Visual Presets</div>
+          <div class="preset-list">
             {#each presets as preset}
-              <button class="preset-card" onclick={() => applyPreset(preset)}>
+              <button class="preset-card" onclick={() => { applyPreset(preset); trackPreset(preset.name); }}>
                 <span class="preset-icon">{preset.icon}</span>
                 <div class="preset-info">
                   <span class="preset-name">{preset.name}</span>
@@ -365,6 +303,16 @@
               <span class="toggle-track"></span>
             </label>
           </div>
+          {#if $stateOverlayVisible}
+            <div class="control-row" style="margin-top: -6px; margin-bottom: 8px;">
+              <div class="segmented-control">
+                <button class="segment" class:active={$boundaryDetail === 'states'}
+                  onclick={() => boundaryDetail.set('states')}>States</button>
+                <button class="segment" class:active={$boundaryDetail === 'districts'}
+                  onclick={() => boundaryDetail.set('districts')}>Districts</button>
+              </div>
+            </div>
+          {/if}
           <div class="control-row">
             <span class="control-label">India Focus Lock</span>
             <label class="toggle">
@@ -445,15 +393,20 @@
           <button class="btn" style="margin-top: 12px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;" onclick={flyToIndia}>
             <RotateCcw size={14} /> Reset to India View
           </button>
+
+          <div class="section-title" style="margin-top: 16px;">3D Visualization</div>
+          <div class="control-row">
+            <span class="control-label"><Box size={14} style="display:inline" /> 3D Data Bars</span>
+            <label class="toggle">
+              <input type="checkbox" checked={$show3DOverlay}
+                onchange={(e) => show3DOverlay.set(e.currentTarget.checked)} />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
         </div>
       {/if}
-    </div>
 
-    <div class="panel-footer">
-      <div class="camera-readout">
-        <span>{$cameraState.lat.toFixed(4)}, {$cameraState.lng.toFixed(4)}</span>
-        <span>z{$cameraState.zoom}</span>
-      </div>
+
     </div>
   </div>
 {/if}
@@ -461,18 +414,18 @@
 <style>
   .panel-toggle-btn {
     position: fixed;
-    top: 16px;
-    left: 16px;
+    top: 12px;
+    left: 12px;
     z-index: var(--z-toolbar, 200);
-    width: 42px;
-    height: 42px;
+    width: 36px;
+    height: 36px;
     border-radius: var(--radius-md);
     border: 1px solid var(--glass-border);
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
     color: var(--text-primary);
-    font-size: 18px;
+    font-size: 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -488,10 +441,10 @@
 
   .control-panel {
     position: fixed;
-    top: 16px;
-    left: 16px;
-    bottom: 16px;
-    width: 310px;
+    top: 12px;
+    left: 12px;
+    bottom: 12px;
+    width: 272px;
     z-index: var(--z-panel, 100);
     display: flex;
     flex-direction: column;
@@ -501,64 +454,90 @@
 
   .panel-header {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--space-lg);
+    flex-direction: column;
+    padding: 10px 12px;
     border-bottom: 1px solid var(--border-subtle);
+    gap: 8px;
   }
   .panel-brand {
     display: flex;
     align-items: center;
-    gap: var(--space-md);
+    justify-content: space-between;
   }
-  .brand-icon { font-size: 28px; }
+  .brand-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .brand-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    border-radius: 5px;
+    box-shadow: var(--shadow-sm);
+    color: white;
+  }
+  .brand-icon svg {
+    width: 12px;
+    height: 12px;
+  }
   .brand-title {
-    font-size: 15px;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 600;
     color: var(--text-primary);
-    letter-spacing: -0.02em;
-  }
-  .brand-sub {
-    font-size: 10px;
-    color: var(--text-tertiary);
-    font-weight: 500;
-    letter-spacing: 0.03em;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
   }
 
   .tab-bar {
     display: flex;
-    border-bottom: 1px solid var(--border-subtle);
-    padding: 0 var(--space-sm);
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-sm);
+    padding: 3px;
+    gap: 1px;
   }
   .tab-btn {
     flex: 1;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 2px;
-    padding: var(--space-sm) var(--space-xs);
+    justify-content: center;
+    gap: 4px;
+    padding: 5px 3px;
     border: none;
-    background: none;
+    background: transparent;
+    border-radius: 4px;
     color: var(--text-tertiary);
-    font-family: var(--font-sans);
     font-size: 10px;
     font-weight: 500;
     cursor: pointer;
-    transition: all var(--transition-normal);
-    border-bottom: 2px solid transparent;
+    transition: all var(--transition-fast);
   }
-  .tab-btn:hover { color: var(--text-secondary); }
+  .tab-btn:hover {
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.05);
+  }
   .tab-btn.active {
-    color: var(--text-accent);
-    border-bottom-color: var(--accent-primary);
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-sm);
   }
-  .tab-icon { font-size: 16px; }
-  .tab-label { letter-spacing: 0.03em; }
-
+  .tab-icon {
+    display: flex;
+    align-items: center;
+  }
+  .tab-label {
+    display: none;
+  }
+  .tab-btn.active .tab-label {
+    display: block;
+  }
   .panel-content {
     flex: 1;
     overflow-y: auto;
-    padding: var(--space-lg);
+    padding: 10px 12px;
   }
   .tab-section { animation: fadeIn 200ms ease; }
 
@@ -598,6 +577,12 @@
   .preset-name { font-size: 13px; font-weight: 600; }
   .preset-desc { font-size: 11px; color: var(--text-tertiary); }
 
+  /* Preset List */
+  .preset-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
   /* India Tab Styles */
   .legend-bar {
     margin-top: 4px;
@@ -706,5 +691,67 @@
     padding: 3px 10px !important;
     font-size: 10px !important;
     min-width: 42px;
+  }
+
+  /* Segmented Control */
+  .segmented-control {
+    display: flex;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 6px;
+    padding: 2px;
+    width: 100%;
+    border: 1px solid var(--border-subtle);
+  }
+  .segment {
+    flex: 1;
+    text-align: center;
+    padding: 4px 0;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .segment:hover {
+    color: var(--text-primary);
+  }
+  .segment.active {
+    background: var(--bg-control-hover);
+    color: var(--accent-primary);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+
+  /* Light theme overrides */
+  :global(.light-theme) .panel-toggle-btn {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+  :global(.light-theme) .panel-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.85);
+  }
+  :global(.light-theme) .tab-bar {
+    background: rgba(0, 0, 0, 0.05);
+  }
+  :global(.light-theme) .tab-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+  :global(.light-theme) .tab-btn.active {
+    background: rgba(255, 255, 255, 0.8);
+    color: var(--text-primary);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+  :global(.light-theme) .brand-icon {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  }
+  :global(.light-theme) .segmented-control {
+    background: rgba(0, 0, 0, 0.06);
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+  :global(.light-theme) .segment.active {
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 </style>

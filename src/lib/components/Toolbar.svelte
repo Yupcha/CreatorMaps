@@ -1,10 +1,22 @@
 <script lang="ts">
-  import { mapInstance } from '$lib/stores/mapStore';
+  import { mapInstance, activeStyle } from '$lib/stores/mapStore';
   import { stateOverlayVisible } from '$lib/stores/indiaGeoStore';
   import { get } from 'svelte/store';
-  import { Compass, Globe, Maximize, Camera, Keyboard } from '@lucide/svelte';
+  import { Compass, Globe, Maximize, Camera, Keyboard, Sun, Moon } from '@lucide/svelte';
 
   let showShortcuts = $state(false);
+
+  const isLightStyle = $derived(
+    $activeStyle === 'liberty' || $activeStyle === 'bright' || $activeStyle === 'positron'
+  );
+
+  function toggleDarkMode() {
+    if (isLightStyle) {
+      activeStyle.set('dark');
+    } else {
+      activeStyle.set('liberty');
+    }
+  }
 
   function resetNorth() {
     get(mapInstance)?.flyTo({ bearing: 0, pitch: 0, duration: 1000 });
@@ -34,7 +46,7 @@
     const canvas = map.getCanvas();
     const dataUrl = canvas.toDataURL('image/png');
     const link = document.createElement('a');
-    link.download = `india-map-${Date.now()}.png`;
+    link.download = `yupcha-map-${Date.now()}.png`;
     link.href = dataUrl;
     link.click();
   }
@@ -47,6 +59,7 @@
       case 'b': stateOverlayVisible.update(v => !v); break;
       case 'f': toggleFullscreen(); break;
       case 's': quickScreenshot(); break;
+      case 'd': toggleDarkMode(); break;
       case '?': showShortcuts = !showShortcuts; break;
     }
   }
@@ -61,6 +74,13 @@
   <div class="toolbar-divider"></div>
   <button class="btn btn-icon btn-accent" onclick={quickScreenshot} title="Quick Screenshot (S)"><Camera size={16} /></button>
   <div class="toolbar-divider"></div>
+  <button class="btn btn-icon" onclick={toggleDarkMode} title="Toggle Dark/Light (D)">
+    {#if isLightStyle}
+      <Moon size={16} />
+    {:else}
+      <Sun size={16} />
+    {/if}
+  </button>
   <button class="btn btn-icon" onclick={() => (showShortcuts = !showShortcuts)} title="Shortcuts (?)"><Keyboard size={16} /></button>
 </div>
 
@@ -84,23 +104,30 @@
 <style>
   .toolbar {
     position: fixed;
-    top: 16px;
-    right: 16px;
+    top: 12px;
+    right: 12px;
     z-index: var(--z-toolbar, 200);
     display: flex;
     flex-direction: column;
-    gap: var(--space-xs);
-    padding: var(--space-sm);
+    gap: 2px;
+    padding: 4px;
+    border-radius: 16px;
+    background: rgba(10, 10, 15, 0.4);
+    backdrop-filter: blur(32px) saturate(200%);
+    -webkit-backdrop-filter: blur(32px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
     animation: slideInRight 400ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .toolbar-divider {
-    width: 100%;
+    width: 60%;
+    margin: 2px auto;
     height: 1px;
-    background: var(--border-subtle);
-    margin: 2px 0;
+    background: rgba(255, 255, 255, 0.08);
   }
 
+  /* Shortcuts Modal */
   .shortcuts-modal {
     position: fixed;
     top: 50%;
@@ -144,5 +171,15 @@
   .shortcut-grid span {
     font-size: 12px;
     color: var(--text-secondary);
+  }
+
+  /* Light theme overrides */
+  :global(.light-theme) .toolbar {
+    background: rgba(255, 255, 255, 0.65);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+  :global(.light-theme) .toolbar-divider {
+    background: rgba(0, 0, 0, 0.08);
   }
 </style>

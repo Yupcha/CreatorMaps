@@ -31,9 +31,10 @@ https://github.com/nextcloud/maps
 https://github.com/joewdavies/awesome-frontend-gis
 https://github.com/iSpring/WebGlobe
 https://github.com/reearth/resium
-
+https://github.com/chubin/wttr.in
 https://github.com/SuperMap/iClient-JavaScript
-
+https://github.com/orgs/mappls-api/repositories?q=sort%3Astars
+https://www.tomorrow.io/weather-api/
 https://webllm.mlc.ai/
 
 https://github.com/pheralb/svgl

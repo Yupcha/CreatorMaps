@@ -1,201 +1,237 @@
 <script lang="ts">
+  import { Search, MapPin, Loader2, X } from '@lucide/svelte';
   import { mapInstance } from '$lib/stores/mapStore';
-  import { searchLocations, type IndianLocation } from '$lib/data/indianLocations';
   import { get } from 'svelte/store';
 
   let query = $state('');
+  let results = $state<any[]>([]);
+  let loading = $state(false);
   let isOpen = $state(false);
-  let selectedIdx = $state(-1);
-  let inputEl: HTMLInputElement;
+  let searchTimeout: any;
 
-  const results = $derived(searchLocations(query));
-
-  $effect(() => {
-    if (query.length > 0) {
-      isOpen = true;
-    } else {
+  async function performSearch(q: string) {
+    if (!q || q.length < 2) {
+      results = [];
       isOpen = false;
-      selectedIdx = -1;
+      return;
     }
-  });
-
-  function flyToLocation(loc: IndianLocation) {
-    const map = get(mapInstance);
-    if (!map) return;
-    map.flyTo({
-      center: [loc.lng, loc.lat],
-      zoom: loc.zoom,
-      pitch: loc.pitch ?? 45,
-      bearing: loc.bearing ?? 0,
-      duration: 2500,
-      essential: true,
-    });
-    query = '';
-    isOpen = false;
-    inputEl?.blur();
+    loading = true;
+    isOpen = true;
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&countrycodes=in&format=json&limit=5`);
+      if (res.ok) {
+        results = await res.json();
+      }
+    } catch (e) {
+      console.error('Search failed', e);
+    } finally {
+      loading = false;
+    }
   }
 
-  function handleKeydown(e: KeyboardEvent) {
-    if (!isOpen || results.length === 0) return;
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      selectedIdx = Math.min(selectedIdx + 1, results.length - 1);
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      selectedIdx = Math.max(selectedIdx - 1, 0);
-    } else if (e.key === 'Enter' && selectedIdx >= 0) {
-      e.preventDefault();
-      flyToLocation(results[selectedIdx]);
-    } else if (e.key === 'Escape') {
-      isOpen = false;
-      inputEl?.blur();
-    }
+  function handleInput(e: Event) {
+    const val = (e.target as HTMLInputElement).value;
+    query = val;
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => performSearch(val), 500);
+  }
+
+  function clearSearch() {
+    query = '';
+    results = [];
+    isOpen = false;
+  }
+
+  function selectResult(result: any) {
+    const map = get(mapInstance);
+    if (!map) return;
+
+    const lat = parseFloat(result.lat);
+    const lon = parseFloat(result.lon);
+
+    map.flyTo({
+      center: [lon, lat],
+      zoom: 10,
+      pitch: 45,
+      bearing: 0,
+      duration: 2500,
+      essential: true
+    });
+
+    query = result.display_name.split(',')[0];
+    isOpen = false;
   }
 </script>
 
-<div class="search-wrapper" id="location-search">
-  <div class="search-box glass-panel">
-    <span class="search-icon">🔍</span>
-    <input
-      bind:this={inputEl}
-      bind:value={query}
-      onkeydown={handleKeydown}
-      onfocus={() => { if (query.length > 0) isOpen = true; }}
-      placeholder="Search Indian cities & landmarks..."
-      type="text"
-      class="search-input"
-      id="search-input"
+<div class="search-container">
+  <div class="search-input-wrapper">
+    <Search size={16} class="search-icon" />
+    <input 
+      type="text" 
+      placeholder="Search cities, states..." 
+      value={query}
+      oninput={handleInput}
+      onfocus={() => { if(query.length > 1) isOpen = true; }}
     />
-    {#if query.length > 0}
-      <button class="clear-btn" onclick={() => { query = ''; }}>✕</button>
+    {#if loading}
+      <Loader2 size={14} class="spinner" />
+    {:else if query}
+      <button class="clear-btn" onclick={clearSearch}><X size={14} /></button>
     {/if}
   </div>
 
   {#if isOpen && results.length > 0}
-    <div class="search-dropdown glass-panel">
-      {#each results as loc, i}
-        <button
-          class="search-result"
-          class:highlighted={i === selectedIdx}
-          onclick={() => flyToLocation(loc)}
-          onmouseenter={() => (selectedIdx = i)}
-        >
-          <div class="result-main">
-            <span class="result-name">{loc.name}</span>
-            {#if loc.state}
-              <span class="result-state">{loc.state}</span>
-            {/if}
+    <div class="search-dropdown">
+      {#each results as result}
+        <button class="search-result" onclick={() => selectResult(result)}>
+          <MapPin size={14} class="result-icon" />
+          <div class="result-text">
+            <span class="result-main">{result.display_name.split(',')[0]}</span>
+            <span class="result-sub">{result.display_name.split(',').slice(1).join(',')}</span>
           </div>
-          {#if loc.description}
-            <span class="result-desc">{loc.description}</span>
-          {/if}
         </button>
       {/each}
+    </div>
+  {:else if isOpen && query.length > 1 && !loading}
+    <div class="search-dropdown">
+      <div class="no-results">No results found</div>
     </div>
   {/if}
 </div>
 
 <style>
-  .search-wrapper {
+  .search-container {
     position: fixed;
     top: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: var(--z-toolbar, 200);
-    width: 360px;
-    max-width: calc(100vw - 380px);
-    animation: slideInUp 400ms cubic-bezier(0.4, 0, 0.2, 1);
+    right: 16px;
+    z-index: 300;
+    width: 280px;
+    font-family: var(--font-sans);
   }
 
-  .search-box {
+  .search-input-wrapper {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-md);
+    background: rgba(8, 8, 18, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    transition: all 0.2s;
   }
 
-  .search-icon {
-    font-size: 14px;
-    opacity: 0.5;
+  .search-input-wrapper:focus-within {
+    border-color: rgba(99, 102, 241, 0.5);
+    background: rgba(8, 8, 18, 0.95);
   }
 
-  .search-input {
+  :global(.search-icon) {
+    color: #9ca3af;
+    margin-right: 8px;
+  }
+
+  input {
     flex: 1;
-    background: none;
+    background: transparent;
     border: none;
     outline: none;
-    color: var(--text-primary);
-    font-family: var(--font-sans);
+    color: #f1f1f4;
     font-size: 13px;
-    font-weight: 400;
+    font-family: inherit;
   }
 
-  .search-input::placeholder {
-    color: var(--text-tertiary);
+  input::placeholder {
+    color: #6b7280;
   }
 
   .clear-btn {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
+    background: none;
     border: none;
-    background: var(--bg-control);
-    color: var(--text-tertiary);
-    font-size: 10px;
+    color: #9ca3af;
     cursor: pointer;
+    padding: 2px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all var(--transition-fast);
+    border-radius: 4px;
   }
-  .clear-btn:hover {
-    background: var(--bg-control-hover);
-    color: var(--text-primary);
+  .clear-btn:hover { color: #f1f1f4; background: rgba(255,255,255,0.1); }
+
+  :global(.spinner) {
+    color: #6366f1;
+    animation: spin 1s linear infinite;
   }
 
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+
   .search-dropdown {
-    margin-top: var(--space-xs);
-    max-height: 320px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    animation: fadeIn 150ms ease;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: rgba(8, 8, 18, 0.95);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
   }
 
   .search-result {
     display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+
+  .search-result:last-child { border-bottom: none; }
+  .search-result:hover { background: rgba(255, 255, 255, 0.05); }
+
+  :global(.result-icon) {
+    color: #6366f1;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  .result-text {
+    display: flex;
     flex-direction: column;
     gap: 2px;
-    padding: var(--space-sm) var(--space-md);
-    border: none;
-    background: none;
-    cursor: pointer;
-    text-align: left;
-    font-family: var(--font-sans);
-    color: var(--text-primary);
-    transition: background var(--transition-fast);
-    border-bottom: 1px solid var(--border-subtle);
-  }
-  .search-result:last-child { border-bottom: none; }
-  .search-result:hover, .search-result.highlighted {
-    background: var(--bg-control-hover);
+    overflow: hidden;
   }
 
   .result-main {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-  }
-  .result-name {
     font-size: 13px;
     font-weight: 600;
+    color: #f1f1f4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .result-state {
-    font-size: 11px;
-    color: var(--text-tertiary);
+
+  .result-sub {
+    font-size: 10px;
+    color: #9ca3af;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .result-desc {
-    font-size: 11px;
-    color: var(--text-tertiary);
+
+  .no-results {
+    padding: 12px;
+    text-align: center;
+    font-size: 12px;
+    color: #9ca3af;
   }
 </style>

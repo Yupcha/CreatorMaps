@@ -1,0 +1,8 @@
+name = "yupcha-map"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".svelte-kit/cloudflare"
+
+[vars]
+PUBLIC_POSTHOG_KEY = ""
+PUBLIC_SENTRY_DSN = ""
