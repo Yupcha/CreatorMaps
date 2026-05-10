@@ -105,7 +105,7 @@
     font-family: var(--font-mono);
     font-size: 9px;
     white-space: nowrap;
-    background: rgba(0, 0, 0, 0.25);
+    background: rgba(0, 0, 0, 0.65);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border-radius: 10px;

@@ -580,7 +580,7 @@
     transform: translateX(-50%);
     width: 100%;
     max-width: 460px;
-    background: rgba(10, 10, 15, 0.6);
+    background: rgba(10, 10, 15, 0.82);
     backdrop-filter: blur(32px) saturate(200%);
     -webkit-backdrop-filter: blur(32px) saturate(200%);
     border: 1px solid rgba(255, 255, 255, 0.08);

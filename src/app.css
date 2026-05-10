@@ -6,11 +6,11 @@
   /* Color Palette — Dark-first, premium feel */
   --bg-primary: #0a0a0f;
   --bg-secondary: #12121a;
-  --bg-panel: rgba(10, 10, 15, 0.4);
-  --bg-panel-hover: rgba(15, 15, 22, 0.5);
-  --bg-control: rgba(255, 255, 255, 0.05);
-  --bg-control-hover: rgba(255, 255, 255, 0.1);
-  --bg-control-active: rgba(255, 255, 255, 0.15);
+  --bg-panel: rgba(10, 10, 15, 0.75);
+  --bg-panel-hover: rgba(15, 15, 22, 0.8);
+  --bg-control: rgba(255, 255, 255, 0.08);
+  --bg-control-hover: rgba(255, 255, 255, 0.14);
+  --bg-control-active: rgba(255, 255, 255, 0.2);
 
   /* Accent Colors */
   --accent-primary: #6366f1;
@@ -40,8 +40,8 @@
 
   /* Glass */
   --glass-blur: 32px;
-  --glass-bg: rgba(10, 10, 15, 0.55);
-  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-bg: rgba(10, 10, 15, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.1);
 
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
