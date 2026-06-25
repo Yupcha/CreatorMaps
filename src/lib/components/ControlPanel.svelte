@@ -54,15 +54,19 @@
     SlidersHorizontal,
     Video,
     Box,
+    Film,
   } from "@lucide/svelte";
 
   import { trackStyleChange, trackPreset } from "$lib/utils/analytics";
+  import DataReelPanel from "$lib/components/DataReelPanel.svelte";
+  import { posterOpen } from "$lib/stores/posterStore";
 
   const tabs = [
     { key: "india" as const, label: "India", icon: "🇮🇳" },
     { key: "filters" as const, label: "Filters", icon: "✨" },
     { key: "export" as const, label: "Export", icon: "📸" },
     { key: "presets" as const, label: "Presets", icon: "⚡" },
+    { key: "datareel" as const, label: "Data Reel", icon: "📊" },
   ];
 
   function setStyle(key: MapStyleKey) {
@@ -219,6 +223,7 @@
               {:else if tab.key === "filters"}<SlidersHorizontal size={14} />
               {:else if tab.key === "export"}<Camera size={14} />
               {:else if tab.key === "presets"}<Zap size={14} />
+              {:else if tab.key === "datareel"}<Film size={14} />
               {/if}
             </span>
             <span class="tab-label">{tab.label}</span>
@@ -412,6 +417,13 @@
               📋
             </button>
           </div>
+          <button
+            class="btn btn-accent"
+            style="margin-top: 8px; width: 100%;"
+            onclick={() => posterOpen.set(true)}
+          >
+            🖼️ Poster / Wallpaper
+          </button>
         </div>
       {/if}
 
@@ -667,6 +679,10 @@
             </label>
           </div>
         </div>
+      {/if}
+
+      {#if $activeTab === "datareel"}
+        <DataReelPanel />
       {/if}
     </div>
   </div>

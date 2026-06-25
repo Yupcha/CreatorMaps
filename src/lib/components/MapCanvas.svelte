@@ -176,7 +176,7 @@
             'case',
             ['boolean', ['feature-state', 'hover'], false],
             0.85,
-            get(overlayOpacity),
+            ['*', get(overlayOpacity), ['coalesce', ['feature-state', 'reveal'], 1]],
           ],
         },
       });
@@ -672,7 +672,7 @@
         'case',
         ['boolean', ['feature-state', 'hover'], false],
         Math.min(1, opacity + 0.2),
-        opacity,
+        ['*', opacity, ['coalesce', ['feature-state', 'reveal'], 1]],
       ]);
     }
   });
