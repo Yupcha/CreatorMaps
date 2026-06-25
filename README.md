@@ -1,7 +1,21 @@
 <div align="center">
-  <img src="static/logo.svg" alt="Yupcha Maps" width="96" />
+  <img src="static/logo.svg" alt="Yupcha Maps logo" width="96" />
   <h1>Yupcha Maps</h1>
   <p><strong>A map content factory for India.</strong> Turn any place, route, or dataset into a beautiful, shareable reel or poster — in seconds.</p>
+  <p>
+    <a href="https://maps.yupcha.com"><strong>🌐 Live app → maps.yupcha.com</strong></a>
+  </p>
+  <p>
+    <a href="https://maps.yupcha.com"><img src="https://img.shields.io/badge/live-maps.yupcha.com-6366f1" alt="Live site" /></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-10b981" alt="MIT License" /></a>
+    <img src="https://img.shields.io/badge/SvelteKit-5-ff3e00?logo=svelte&logoColor=white" alt="SvelteKit 5" />
+    <img src="https://img.shields.io/badge/MapLibre-GL-295fed" alt="MapLibre GL" />
+    <img src="https://img.shields.io/badge/deck.gl-9-000000" alt="deck.gl" />
+  </p>
+  <br />
+  <a href="https://maps.yupcha.com">
+    <img src="docs/screenshots/hero.png" alt="Yupcha Maps — interactive choropleth of India with the creator control panel" width="100%" />
+  </a>
 </div>
 
 ---
@@ -16,6 +30,12 @@ Google Maps is a navigation utility. **Yupcha Maps** is for *making things you w
 - **🖼️ Poster / Wallpaper Export** — high-res styled SVG + PNG prints (phone wallpaper, IG post, A4) with a title block, watermark, and a QR code that links back to the live scene.
 - **Shared reel foundation** — multi-aspect export (**9:16 / 1:1 / 16:9**), text/watermark overlays, beat-sync timing, and **remixable scene-links** (every export encodes its scene into a URL that reopens and can be tweaked).
 - **Map toolkit** — choropleths (population, GDP, literacy, area), city pins, 3D buildings & terrain, satellite/vector styles, and a cinematic camera studio.
+
+## 📸 Screenshots
+
+| Trip Reel | Data Reel | Poster Studio |
+| :---: | :---: | :---: |
+| ![Trip Reel — build an itinerary into an animated route flight](docs/screenshots/trip-reel.png) | ![Data Reel — animated Top-N states choropleth](docs/screenshots/data-reel.png) | ![Poster Studio — hi-res wallpaper and print export](docs/screenshots/poster.png) |
 
 ## 🚀 Quick start
 
