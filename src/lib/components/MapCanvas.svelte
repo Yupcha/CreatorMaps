@@ -553,7 +553,9 @@
       canvasContextAttributes: { preserveDrawingBuffer: true },
       maxPitch: 85,
       fadeDuration: 0,
-      attributionControl: false,
+      // OpenFreeMap/OpenStreetMap tiles are ODbL-licensed and require visible
+      // attribution. Keep it (compact) rather than disabling it outright.
+      attributionControl: { compact: true },
     } as any);
 
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');

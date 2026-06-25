@@ -2,6 +2,14 @@
 	"name": "indian-map",
 	"private": true,
 	"version": "0.0.1",
+	"description": "Yupcha Maps — a map content factory for India: turn any place, route, or dataset into a shareable reel or poster.",
+	"license": "MIT",
+	"author": "debpalash",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/debpalash/indian-map.git"
+	},
+	"homepage": "https://github.com/debpalash/indian-map#readme",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",

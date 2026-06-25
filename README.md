@@ -1,42 +1,66 @@
-# sv
+<div align="center">
+  <img src="static/logo.svg" alt="Yupcha Maps" width="96" />
+  <h1>Yupcha Maps</h1>
+  <p><strong>A map content factory for India.</strong> Turn any place, route, or dataset into a beautiful, shareable reel or poster — in seconds.</p>
+</div>
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+---
 
-## Creating a project
+Google Maps is a navigation utility. **Yupcha Maps** is for *making things you want to post*: cinematic map videos, data flexes, and framable prints — all India-native, all in the browser, no GPU farm or pro tools required.
 
-If you're seeing this, you've probably already done this step. Congrats!
+## ✨ Features
 
-```sh
-# create a new project
-npx sv create my-app
-```
+- **🌍 Roots Reel** — a one-tap emotional zoom from space down to your hometown rooftop, with a name/title overlay. Diaspora and regional-pride gold.
+- **🛣️ Trip Reel** — paste an itinerary and get an animated route-line flight between stops, with distance/label stamps and ready-made templates (Golden Triangle, Manali–Leh, and more).
+- **📊 Data Reel** — animated "Top-N states by metric" reveal with on-map choropleth staggering and counting-up numbers, scored to a beat.
+- **🖼️ Poster / Wallpaper Export** — high-res styled SVG + PNG prints (phone wallpaper, IG post, A4) with a title block, watermark, and a QR code that links back to the live scene.
+- **Shared reel foundation** — multi-aspect export (**9:16 / 1:1 / 16:9**), text/watermark overlays, beat-sync timing, and **remixable scene-links** (every export encodes its scene into a URL that reopens and can be tweaked).
+- **Map toolkit** — choropleths (population, GDP, literacy, area), city pins, 3D buildings & terrain, satellite/vector styles, and a cinematic camera studio.
 
-To recreate this project with the same configuration:
+## 🚀 Quick start
 
-```sh
-# recreate this project
-npx sv@0.15.3 create --template minimal --types ts --install npm ./
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
+Requires Node 18+ (the repo uses [Bun](https://bun.sh) and npm lockfiles; either works).
 
 ```sh
-npm run build
+git clone https://github.com/debpalash/indian-map.git
+cd indian-map
+npm install
+npm run dev        # http://localhost:5173
 ```
 
-You can preview the production build with `npm run preview`.
+No API keys are needed — the basemap is served by [OpenFreeMap](https://openfreemap.org).
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+### Optional configuration
+
+Analytics and error tracking are off by default. To enable them, copy the example env file and fill in your keys:
+
+```sh
+cp .env.example .env
+```
+
+| Variable | Purpose |
+| --- | --- |
+| `PUBLIC_POSTHOG_KEY` | [PostHog](https://posthog.com) product analytics (optional) |
+| `PUBLIC_SENTRY_DSN` | [Sentry](https://sentry.io) error tracking (optional) |
+
+## 🛠️ Build & deploy
+
+```sh
+npm run build      # production build (Cloudflare adapter)
+npm run preview    # preview the production build locally
+npm run check      # type-check with svelte-check
+```
+
+The project ships with `@sveltejs/adapter-cloudflare` and a `wrangler.toml` for Cloudflare Pages.
+
+## 🧱 Tech stack
+
+[SvelteKit 2](https://svelte.dev/docs/kit) · [Svelte 5](https://svelte.dev) (runes) · [Vite](https://vite.dev) · [MapLibre GL](https://maplibre.org) · [deck.gl](https://deck.gl) · [Threlte](https://threlte.xyz)/[three.js](https://threejs.org) · [Plotly](https://plotly.com/javascript/) · [Turf](https://turfjs.org) · [PGlite](https://pglite.dev) · TypeScript.
+
+## 📍 Attribution
+
+Basemap tiles © [OpenFreeMap](https://openfreemap.org) and [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, available under the [ODbL](https://opendatacommons.org/licenses/odbl/). Please keep map attribution visible in any deployment.
+
+## 📄 License
+
+[MIT](LICENSE) © 2026 debpalash
