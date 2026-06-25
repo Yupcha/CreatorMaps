@@ -2,7 +2,9 @@
   import { mapInstance, activeStyle } from '$lib/stores/mapStore';
   import { stateOverlayVisible } from '$lib/stores/indiaGeoStore';
   import { get } from 'svelte/store';
-  import { Compass, Globe, Maximize, Camera, Keyboard, Sun, Moon } from '@lucide/svelte';
+  import { Compass, Globe, Maximize, Camera, Keyboard, Sun, Moon, Route, Image } from '@lucide/svelte';
+  import { tripReelOpen } from '$lib/stores/tripReelStore';
+  import { posterOpen } from '$lib/stores/posterStore';
 
   let showShortcuts = $state(false);
 
@@ -60,6 +62,8 @@
       case 'f': toggleFullscreen(); break;
       case 's': quickScreenshot(); break;
       case 'd': toggleDarkMode(); break;
+      case 't': tripReelOpen.set(true); break;
+      case 'p': e.preventDefault(); posterOpen.set(true); break;
       case '?': showShortcuts = !showShortcuts; break;
     }
   }
@@ -73,6 +77,8 @@
   <button class="btn btn-icon" onclick={toggleFullscreen} title="Fullscreen (F)"><Maximize size={16} /></button>
   <div class="toolbar-divider"></div>
   <button class="btn btn-icon btn-accent" onclick={quickScreenshot} title="Quick Screenshot (S)"><Camera size={16} /></button>
+  <button class="btn btn-icon" onclick={() => tripReelOpen.set(true)} title="Trip Reel (T)"><Route size={16} /></button>
+  <button class="btn btn-icon" onclick={() => posterOpen.set(true)} title="Poster / Wallpaper (P)"><Image size={16} /></button>
   <div class="toolbar-divider"></div>
   <button class="btn btn-icon" onclick={toggleDarkMode} title="Toggle Dark/Light (D)">
     {#if isLightStyle}
@@ -94,6 +100,8 @@
       <kbd>B</kbd><span>Toggle Boundaries</span>
       <kbd>F</kbd><span>Toggle Fullscreen</span>
       <kbd>S</kbd><span>Quick Screenshot</span>
+      <kbd>T</kbd><span>Trip Reel</span>
+      <kbd>P</kbd><span>Poster / Wallpaper</span>
       <kbd>Scroll</kbd><span>Zoom In/Out</span>
       <kbd>Drag</kbd><span>Pan Map</span>
       <kbd>Ctrl+Drag</kbd><span>Rotate & Pitch</span>

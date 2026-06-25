@@ -176,7 +176,7 @@
             'case',
             ['boolean', ['feature-state', 'hover'], false],
             0.85,
-            get(overlayOpacity),
+            ['*', get(overlayOpacity), ['coalesce', ['feature-state', 'reveal'], 1]],
           ],
         },
       });
@@ -547,7 +547,10 @@
       zoom: cs.zoom,
       pitch: cs.pitch,
       bearing: cs.bearing,
-      preserveDrawingBuffer: true,
+      // maplibre-gl v5 moved WebGL context attributes here; a top-level
+      // `preserveDrawingBuffer` is ignored. This must be set for the basemap
+      // canvas to be readable by the reel/poster export compositor.
+      canvasContextAttributes: { preserveDrawingBuffer: true },
       maxPitch: 85,
       fadeDuration: 0,
       attributionControl: false,
@@ -672,7 +675,7 @@
         'case',
         ['boolean', ['feature-state', 'hover'], false],
         Math.min(1, opacity + 0.2),
-        opacity,
+        ['*', opacity, ['coalesce', ['feature-state', 'reveal'], 1]],
       ]);
     }
   });
