@@ -100,6 +100,40 @@ function coverRect(srcW: number, srcH: number, dstW: number, dstH: number) {
   return { sx: (srcW - sw) / 2, sy: (srcH - sh) / 2, sw, sh };
 }
 
+/**
+ * Composite EVERY canvas in the map container (in DOM/stacking order) into the
+ * destination 2D context with object-fit:cover center-crop.
+ *
+ * The visible map is split across multiple WebGL canvases: the maplibre basemap
+ * + fill layers (choropleth) on `.maplibregl-canvas`, and the deck.gl overlay
+ * (city pins, labels) on a sibling canvas stacked above it. Blitting only
+ * `map.getCanvas()` drops the deck.gl layers — and unless every source canvas
+ * was created with preserveDrawingBuffer:true, drawImage reads black. We draw
+ * them all so the export matches what's on screen.
+ */
+function compositeMapCanvases(
+  ctx: CanvasRenderingContext2D,
+  map: MapLibreMap,
+  dstW: number,
+  dstH: number
+): void {
+  const container = map.getContainer();
+  const canvases = container.querySelectorAll('canvas');
+  const base = map.getCanvas();
+  for (const cv of canvases) {
+    if (!cv.width || !cv.height) continue;
+    // Crop is computed from the basemap canvas so every layer stays aligned
+    // even if a deck.gl canvas reports slightly different backing dimensions.
+    const ref = cv === base ? cv : base;
+    const { sx, sy, sw, sh } = coverRect(ref.width, ref.height, dstW, dstH);
+    try {
+      ctx.drawImage(cv, sx, sy, sw, sh, 0, 0, dstW, dstH);
+    } catch {
+      /* tainted/uninitialised canvas — skip */
+    }
+  }
+}
+
 function downloadBlob(blob: Blob, fileName: string): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -201,8 +235,7 @@ export async function recordReel(opts: RecordReelOptions): Promise<RecordReelRes
       still.height = height;
       const sctx = still.getContext('2d');
       if (sctx) {
-        const { sx, sy, sw, sh } = coverRect(mapCanvas.width, mapCanvas.height, width, height);
-        sctx.drawImage(mapCanvas, sx, sy, sw, sh, 0, 0, width, height);
+        compositeMapCanvases(sctx, map, width, height);
         if (drawOverlay) {
           drawOverlay(sctx, { elapsedMs: durationMs, durationMs, progress: 1, width, height });
         }
@@ -244,8 +277,7 @@ export async function recordReel(opts: RecordReelOptions): Promise<RecordReelRes
         if (abort.signal.aborted) return;
         const elapsedMs = animStart ? performance.now() - animStart : 0;
         const progress = Math.max(0, Math.min(1, elapsedMs / durationMs));
-        const { sx, sy, sw, sh } = coverRect(mapCanvas.width, mapCanvas.height, off.width, off.height);
-        c.drawImage(mapCanvas, sx, sy, sw, sh, 0, 0, off.width, off.height);
+        compositeMapCanvases(c, map, off.width, off.height);
         drawOverlay!(c, { elapsedMs, durationMs, progress, width: off.width, height: off.height });
         onProgress?.(progress);
         rafId = requestAnimationFrame(draw);
@@ -311,14 +343,12 @@ export async function captureStill(opts: {
   const map = opts.map ?? get(mapInstance);
   if (!map) return null;
   const { width, height } = opts;
-  const mapCanvas = map.getCanvas();
   const still = document.createElement('canvas');
   still.width = width;
   still.height = height;
   const sctx = still.getContext('2d');
   if (!sctx) return null;
-  const { sx, sy, sw, sh } = coverRect(mapCanvas.width, mapCanvas.height, width, height);
-  sctx.drawImage(mapCanvas, sx, sy, sw, sh, 0, 0, width, height);
+  compositeMapCanvases(sctx, map, width, height);
   opts.drawOverlay?.(sctx, { elapsedMs: 0, durationMs: 0, progress: 1, width, height });
   const blob = await new Promise<Blob | null>((resolve) => still.toBlob(resolve, 'image/png'));
   if (blob && (opts.download ?? true)) downloadBlob(blob, `${opts.fileBaseName ?? 'yupcha-still'}.png`);

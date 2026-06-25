@@ -547,7 +547,10 @@
       zoom: cs.zoom,
       pitch: cs.pitch,
       bearing: cs.bearing,
-      preserveDrawingBuffer: true,
+      // maplibre-gl v5 moved WebGL context attributes here; a top-level
+      // `preserveDrawingBuffer` is ignored. This must be set for the basemap
+      // canvas to be readable by the reel/poster export compositor.
+      canvasContextAttributes: { preserveDrawingBuffer: true },
       maxPitch: 85,
       fadeDuration: 0,
       attributionControl: false,
