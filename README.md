@@ -22,8 +22,8 @@ Google Maps is a navigation utility. **Yupcha Maps** is for *making things you w
 Requires Node 18+ (the repo uses [Bun](https://bun.sh) and npm lockfiles; either works).
 
 ```sh
-git clone https://github.com/debpalash/indian-map.git
-cd indian-map
+git clone https://github.com/Yupcha/CreatorMaps.git
+cd CreatorMaps
 npm install
 npm run dev        # http://localhost:5173
 ```
@@ -63,4 +63,4 @@ Basemap tiles © [OpenFreeMap](https://openfreemap.org) and [OpenStreetMap](http
 
 ## 📄 License
 
-[MIT](LICENSE) © 2026 debpalash
+[MIT](LICENSE) © 2026 Yupcha
